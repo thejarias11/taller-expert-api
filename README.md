@@ -86,11 +86,15 @@ npm run dev
 npm start
 Acceder a la aplicación
 
-text
+
+
 Frontend: http://localhost:3000
 API: http://localhost:3000/api
+
+
 📡 API Endpoints
 🔐 Autenticación
+
 Método	Endpoint	Descripción	Autenticación
 POST	/api/auth/register	Registrar nuevo usuario	Pública
 POST	/api/auth/login	Iniciar sesión	Pública
@@ -107,26 +111,30 @@ GET	/api/appointments	Listar citas	Todos
 POST	/api/appointments	Crear nueva cita	Admin/Empleado
 PUT	/api/appointments/:id/status	Actualizar estado	Admin/Empleado
 DELETE	/api/appointments/:id	Eliminar cita	Admin
+
+
 🩺 Sistema
+
 Método	Endpoint	Descripción
 GET	/api/health	Estado del servidor
 👤 Usuarios de Prueba
 El sistema incluye usuarios por defecto para testing:
 
 🔧 Administrador
-text
+
 Usuario: admin
 Contraseña: 123456
 Permisos: Acceso completo a todas las funcionalidades del sistema.
 
 🔧 Empleado
-text
+
 Usuario: empleado1
 Contraseña: abcdef
 Permisos: Gestión de citas y consulta de inventario.
 
 🗂️ Estructura del Proyecto
-text
+
+
 taller-expert-api/
 ├── src/
 │   ├── controllers/         # Lógica de negocio
@@ -151,6 +159,9 @@ taller-expert-api/
 ├── server.js              # Punto de entrada
 ├── package.json           # Dependencias del proyecto
 └── README.md              # Este archivo
+
+
+
 🧪 Pruebas
 Pruebas con Postman
 Importar la colección de Postman incluida
