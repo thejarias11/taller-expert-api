@@ -63,7 +63,7 @@ Sistema web completo para la gestión de talleres de motocicletas desarrollado c
 ### Pasos de instalación
 
 1. **Clonar el repositorio**
-```bash
+
 git clone https://github.com/tu-usuario/taller-expert-api.git
 cd taller-expert-api
 Instalar dependencias
