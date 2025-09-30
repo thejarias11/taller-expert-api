@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Taller Expert</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>👤 Registro de Usuario</h1>
+            <a href="index.html" class="back-link">← Volver al inicio</a>
+        </header>
+
+        <div class="login-form">
+            <div class="card">
+                <h2>Crear Nueva Cuenta</h2>
+                
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="regUsername">Usuario:</label>
+                        <input type="text" id="regUsername" name="username" required 
+                               placeholder="Ej: juan_perez">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPassword">Contraseña:</label>
+                        <input type="password" id="regPassword" name="password" required 
+                               placeholder="Mínimo 6 caracteres">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regRole">Tipo de Usuario:</label>
+                        <select id="regRole" name="role">
+                            <option value="empleado">Empleado</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-success">Registrar Usuario</button>
+                </form>
+
+                <div class="demo-accounts">
+                    <h3>💡 Tipos de Usuario:</h3>
+                    <div class="account">
+                        <strong>Administrador:</strong> Acceso completo a todo el sistema
+                    </div>
+                    <div class="account">
+                        <strong>Empleado:</strong> Puede gestionar citas y ver inventario
+                    </div>
+                </div>
+
+                <div id="message" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const role = document.getElementById('regRole').value;
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, role })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.innerHTML = `
+                        <div class="success">
+                            ✅ ${data.message}<br>
+                            <strong>Usuario:</strong> ${data.user.username}<br>
+                            <strong>Rol:</strong> ${data.user.role}<br>
+                            <strong>ID:</strong> ${data.user.id}
+                        </div>
+                    `;
+                    
+                    // Limpiar formulario
+                    document.getElementById('registerForm').reset();
+                    
+                    // Opcional: Redirigir al login después de 3 segundos
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 3000);
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="error">
+                            ❌ ${data.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="error">
+                        ❌ Error de conexión: ${error.message}
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

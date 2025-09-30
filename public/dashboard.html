@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Taller Expert</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Dashboard - Taller Expert</h1>
+            <div class="user-info">
+                <span id="userWelcome">Bienvenido</span>
+                <button onclick="logout()" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <nav class="sidebar">
+            <a href="#products" onclick="showSection('products')">📦 Productos</a>
+            <a href="#appointments" onclick="showSection('appointments')">📅 Citas</a>
+            <a href="#users" onclick="showSection('users')">👥 Usuarios</a>
+        </nav>
+
+        <main class="content">
+            <!-- Sección de Productos -->
+            <div id="products" class="section active">
+                <h2>Gestión de Productos</h2>
+                <div class="actions">
+                    <button onclick="loadProducts()" class="btn-primary">Cargar Productos</button>
+                    <button onclick="showCreateProduct()" class="btn-success">+ Nuevo Producto</button>
+                </div>
+                <div id="productsList" class="data-container"></div>
+            </div>
+
+            <!-- Sección de Citas -->
+            <div id="appointments" class="section">
+                <h2>Gestión de Citas</h2>
+                <div class="actions">
+                    <button onclick="loadAppointments()" class="btn-primary">Cargar Citas</button>
+                    <button onclick="showCreateAppointment()" class="btn-success">+ Nueva Cita</button>
+                </div>
+                <div id="appointmentsList" class="data-container"></div>
+            </div>
+
+                        <!-- Formulario para crear producto (solo admin) -->
+            <div id="createProductForm" class="form-section" style="display: none;">
+                <h3>➕ Agregar Nuevo Producto</h3>
+                <form id="productForm">
+                    <div class="form-group">
+                        <label>Nombre del Producto:</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción:</label>
+                        <input type="text" id="productDescription">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio:</label>
+                        <input type="number" id="productPrice" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock:</label>
+                        <input type="number" id="productStock" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría:</label>
+                        <select id="productCategory">
+                            <option value="repuesto">Repuesto</option>
+                            <option value="lubricante">Lubricante</option>
+                            <option value="llanta">Llanta</option>
+                            <option value="accesorio">Accesorio</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-success">Guardar Producto</button>
+                    <button type="button" onclick="hideCreateProduct()" class="btn-secondary">Cancelar</button>
+                </form>
+            </div>
+
+            <!-- Formulario para crear cita -->
+            <div id="createAppointmentForm" class="form-section" style="display: none;">
+                <h3>📅 Agendar Nueva Cita</h3>
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label>Nombre del Cliente:</label>
+                        <input type="text" id="clientName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono:</label>
+                        <input type="text" id="clientPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Modelo de Moto:</label>
+                        <input type="text" id="motorcycleModel" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Servicio:</label>
+                        <select id="serviceType">
+                            <option value="Cambio de aceite">Cambio de aceite</option>
+                            <option value="Reparación general">Reparación general</option>
+                            <option value="Afinamiento">Afinamiento</option>
+                            <option value="Lavado y detailing">Lavado y detailing</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha y Hora:</label>
+                        <input type="datetime-local" id="scheduledDate" required>
+                    </div>
+                    <button type="submit" class="btn-success">Agendar Cita</button>
+                    <button type="button" onclick="hideCreateAppointment()" class="btn-secondary">Cancelar</button>
+                </form>
+            </div>
+
+            <!-- Sección de Usuarios -->
+            <div id="users" class="section">
+                <h2>Información del Usuario</h2>
+                <div id="userInfo" class="data-container"></div>
+            </div>
+        </main>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        // Verificar autenticación al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('userWelcome').textContent = 
+                `Bienvenido, ${user.username} (${user.role})`;
+            
+            showUserInfo();
+        });
+
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Mostrar la sección seleccionada
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function showUserInfo() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('userInfo').innerHTML = `
+                <div class="info-card">
+                    <h3>👤 Información del Usuario</h3>
+                    <p><strong>ID:</strong> ${user.userId || 'N/A'}</p>
+                    <p><strong>Usuario:</strong> ${user.username}</p>
+                    <p><strong>Rol:</strong> ${user.role}</p>
+                    <p><strong>Token:</strong> ${localStorage.getItem('token').substring(0, 30)}...</p>
+                </div>
+            `;
+        }
+
+        async function loadProducts() {
+            const token = localStorage.getItem('token');
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const response = await fetch('/api/products', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('productsList').innerHTML = `
+                        <div class="success">
+                            ✅ ${data.message || 'Productos cargados correctamente'}
+                        </div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="error">
+                            ❌ ${data.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="error">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function loadAppointments() {
+            const token = localStorage.getItem('token');
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const response = await fetch('/api/appointments', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('appointmentsList').innerHTML = `
+                        <div class="success">
+                            ✅ ${data.message || 'Citas cargadas correctamente'}
+                        </div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="error">
+                            ❌ ${data.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="error">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        function showCreateProduct() {
+            alert('Funcionalidad para crear producto - En desarrollo');
+        }
+
+        function showCreateAppointment() {
+            alert('Funcionalidad para crear cita - En desarrollo');
+        }
+                // Funciones para mostrar/ocultar formularios
+        function showCreateProduct() {
+            document.getElementById('createProductForm').style.display = 'block';
+            document.getElementById('productsList').innerHTML = '';
+        }
+
+        function hideCreateProduct() {
+            document.getElementById('createProductForm').style.display = 'none';
+        }
+
+        function showCreateAppointment() {
+            document.getElementById('createAppointmentForm').style.display = 'block';
+            document.getElementById('appointmentsList').innerHTML = '';
+        }
+
+        function hideCreateAppointment() {
+            document.getElementById('createAppointmentForm').style.display = 'none';
+        }
+
+        // Crear nuevo producto
+        document.getElementById('productForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const token = localStorage.getItem('token');
+            const productData = {
+                name: document.getElementById('productName').value,
+                description: document.getElementById('productDescription').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                stock: parseInt(document.getElementById('productStock').value),
+                category: document.getElementById('productCategory').value
+            };
+
+            try {
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(productData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('message').innerHTML = `
+                        <div class="success">✅ ${data.message}</div>
+                    `;
+                    hideCreateProduct();
+                    loadProducts(); // Recargar la lista
+                } else {
+                    document.getElementById('message').innerHTML = `
+                        <div class="error">❌ ${data.message}</div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('message').innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        });
+
+        // Crear nueva cita
+        document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const token = localStorage.getItem('token');
+            const appointmentData = {
+                clientName: document.getElementById('clientName').value,
+                clientPhone: document.getElementById('clientPhone').value,
+                motorcycleModel: document.getElementById('motorcycleModel').value,
+                serviceType: document.getElementById('serviceType').value,
+                scheduledDate: document.getElementById('scheduledDate').value
+            };
+
+            try {
+                const response = await fetch('/api/appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(appointmentData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('message').innerHTML = `
+                        <div class="success">✅ ${data.message}</div>
+                    `;
+                    hideCreateAppointment();
+                    loadAppointments(); // Recargar la lista
+                } else {
+                    document.getElementById('message').innerHTML = `
+                        <div class="error">❌ ${data.message}</div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('message').innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        });
+
+        // Mejorar la función loadProducts para mostrar datos bonitos
+        async function loadProducts() {
+            const token = localStorage.getItem('token');
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const response = await fetch('/api/products', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.data && data.data.length > 0) {
+                        let html = '<h3>📦 Lista de Productos</h3>';
+                        html += '<div class="products-grid">';
+                        
+                        data.data.forEach(product => {
+                            html += `
+                                <div class="product-card">
+                                    <h4>${product.name}</h4>
+                                    <p>${product.description}</p>
+                                    <p><strong>Precio:</strong> $${product.price}</p>
+                                    <p><strong>Stock:</strong> ${product.stock} unidades</p>
+                                    <p><strong>Categoría:</strong> ${product.category}</p>
+                                </div>
+                            `;
+                        });
+                        
+                        html += '</div>';
+                        document.getElementById('productsList').innerHTML = html;
+                    } else {
+                        document.getElementById('productsList').innerHTML = `
+                            <div class="info">
+                                📝 No hay productos registrados. ¡Agrega el primero!
+                            </div>
+                        `;
+                    }
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="error">❌ ${data.message}</div>
+                    `;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+
+        // Mejorar la función loadAppointments
+        async function loadAppointments() {
+            const token = localStorage.getItem('token');
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const response = await fetch('/api/appointments', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.data && data.data.length > 0) {
+                        let html = '<h3>📅 Citas Agendadas</h3>';
+                        html += '<div class="appointments-list">';
+                        
+                        data.data.forEach(appointment => {
+                            const date = new Date(appointment.scheduledDate);
+                            html += `
+                                <div class="appointment-card">
+                                    <h4>${appointment.clientName} - ${appointment.motorcycleModel}</h4>
+                                    <p><strong>Servicio:</strong> ${appointment.serviceType}</p>
+                                    <p><strong>Teléfono:</strong> ${appointment.clientPhone}</p>
+                                    <p><strong>Fecha:</strong> ${date.toLocaleString()}</p>
+                                    <p><strong>Estado:</strong> ${appointment.status}</p>
+                                </div>
+                            `;
+                        });
+                        
+                        html += '</div>';
+                        document.getElementById('appointmentsList').innerHTML = html;
+                    } else {
+                        document.getElementById('appointmentsList').innerHTML = `
+                            <div class="info">
+                                📝 No hay citas agendadas. ¡Agrega la primera!
+                            </div>
+                        `;
+                    }
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="error">❌ ${data.message}</div>
+                    `;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

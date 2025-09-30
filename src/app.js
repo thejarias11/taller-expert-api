@@ -5,16 +5,23 @@ require('dotenv').config();
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes');
 
 // Crear aplicación Express
 const app = express();
 
 // Middlewares
-app.use(cors()); // Permitir peticiones de otros dominios
-app.use(express.json()); // Permitir que el servidor entienda JSON
+app.use(cors());
+app.use(express.json());
+
+// Servir archivos estáticos (HTML, CSS, JS)
+app.use(express.static('public'));
 
 // Usar rutas
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {

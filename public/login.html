@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Taller Expert</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔐 Iniciar Sesión</h1>
+            <a href="index.html" class="back-link">← Volver al inicio</a>
+        </header>
+
+        <div class="login-form">
+            <div class="card">
+                <h2>Acceso al Sistema</h2>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Usuario:</label>
+                        <input type="text" id="username" name="username" required 
+                               placeholder="admin o empleado1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña:</label>
+                        <input type="password" id="password" name="password" required 
+                               placeholder="123456">
+                    </div>
+
+                    <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                </form>
+
+                <div class="demo-accounts">
+                    <h3>Cuentas de demostración:</h3>
+                    <div class="account">
+                        <strong>Admin:</strong> admin / 123456
+                    </div>
+                    <div class="account">
+                        <strong>Empleado:</strong> empleado1 / abcdef
+                    </div>
+                </div>
+
+                <div id="message" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.innerHTML = `
+                        <div class="success">
+                            ✅ ${data.message}<br>
+                            <strong>Token:</strong> ${data.token.substring(0, 20)}...<br>
+                            <strong>Usuario:</strong> ${data.user.username}<br>
+                            <strong>Rol:</strong> ${data.user.role}
+                        </div>
+                    `;
+                    
+                    // Guardar token en localStorage
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Redirigir después de 2 segundos
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="error">
+                            ❌ ${data.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="error">
+                        ❌ Error de conexión: ${error.message}
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

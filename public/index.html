@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller Expert - Sistema de Gestión</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="main-menu">
+            <!-- 🔐 AGREGAR ESTA NUEVA TARJETA DE REGISTRO -->
+            <div class="card">
+                <h2>👤 Registro de Usuarios</h2>
+                <p>Crear nuevas cuentas en el sistema</p>
+                <button onclick="window.location.href='register.html'" class="btn-success">
+                    Ir al Registro
+                </button>
+            </div>
+
+            <div class="card">
+                <h2>🔐 Iniciar Sesión</h2>
+                <p>Accede al sistema de gestión</p>
+                <button onclick="window.location.href='login.html'" class="btn-primary">
+                    Ir al Login
+                </button>
+            </div>
+    <div class="container">
+        <header>
+            <h1>🏍️ Taller Expert</h1>
+            <p>Sistema de Gestión para Taller de Motos</p>
+        </header>
+
+        <div class="main-menu">
+            <div class="card">
+                <h2>🔐 Iniciar Sesión</h2>
+                <p>Accede al sistema de gestión</p>
+                <button onclick="window.location.href='login.html'" class="btn-primary">
+                    Ir al Login
+                </button>
+            </div>
+
+            <div class="card">
+                <h2>📊 Dashboard</h2>
+                <p>Panel de control principal</p>
+                <button onclick="window.location.href='dashboard.html'" class="btn-secondary">
+                    Ver Dashboard
+                </button>
+            </div>
+
+            <div class="card">
+                <h2>🛠️ API Endpoints</h2>
+                <p>Prueba los servicios web</p>
+                <div class="endpoints">
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <code>/api/health</code>
+                    </div>
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/api/auth/login</code>
+                    </div>
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <code>/api/products</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Desarrollado con Node.js & Express</p>
+        </footer>
+    </div>
+</body>
+</html>
