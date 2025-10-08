@@ -7,7 +7,7 @@ const authenticateToken = (req, res, next) => {
     if (!token) {
         return res.status(401).json({
             success: false,
-            message: '❌ Token de acceso requerido'
+            message: 'Token de acceso requerido'
         });
     }
 
@@ -18,7 +18,7 @@ const authenticateToken = (req, res, next) => {
     } catch (error) {
         return res.status(403).json({
             success: false,
-            message: '❌ Token inválido o expirado'
+            message: 'Token invalido o expirado'
         });
     }
 };

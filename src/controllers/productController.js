@@ -1,15 +1,41 @@
 // Base de datos temporal para productos
-let products = [];
-let nextProductId = 1;
+let products = [
+    {
+        id: 1,
+        name: "Aceite Motul 10W40",
+        description: "Aceite sintético para motos de alta cilindrada",
+        price: 45.99,
+        stock: 25,
+        category: "lubricante",
+        createdAt: new Date(),
+        createdBy: "admin"
+    },
+    {
+        id: 2,
+        name: "Filtro de Aire Original",
+        description: "Filtro de aire para motos 150-200cc",
+        price: 18.50,
+        stock: 15,
+        category: "repuesto", 
+        createdAt: new Date(),
+        createdBy: "admin"
+    }
+];
+let nextProductId = 3;
 
 const getAllProducts = (req, res) => {
     try {
+        console.log('📦 Obteniendo todos los productos...');
+        console.log('Total de productos:', products.length);
+        
         res.json({
             success: true,
             data: products,
-            total: products.length
+            total: products.length,
+            message: `✅ Se encontraron ${products.length} productos`
         });
     } catch (error) {
+        console.error('❌ Error al obtener productos:', error);
         res.status(500).json({
             success: false,
             message: '❌ Error al obtener productos'
@@ -19,7 +45,10 @@ const getAllProducts = (req, res) => {
 
 const getProductById = (req, res) => {
     try {
-        const product = products.find(p => p.id === parseInt(req.params.id));
+        const productId = parseInt(req.params.id);
+        console.log('🔍 Buscando producto ID:', productId);
+        
+        const product = products.find(p => p.id === productId);
         
         if (!product) {
             return res.status(404).json({
@@ -30,9 +59,11 @@ const getProductById = (req, res) => {
 
         res.json({
             success: true,
-            data: product
+            data: product,
+            message: '✅ Producto encontrado'
         });
     } catch (error) {
+        console.error('❌ Error al obtener producto:', error);
         res.status(500).json({
             success: false,
             message: '❌ Error al obtener producto'
@@ -43,7 +74,10 @@ const getProductById = (req, res) => {
 const createProduct = (req, res) => {
     try {
         const { name, description, price, stock, category } = req.body;
+        
+        console.log('🆕 Creando nuevo producto:', { name, price, stock });
 
+        // Validaciones
         if (!name || !price || !stock) {
             return res.status(400).json({
                 success: false,
@@ -51,6 +85,7 @@ const createProduct = (req, res) => {
             });
         }
 
+        // Crear nuevo producto
         const newProduct = {
             id: nextProductId++,
             name,
@@ -59,17 +94,23 @@ const createProduct = (req, res) => {
             stock: parseInt(stock),
             category: category || 'repuesto',
             createdAt: new Date(),
-            createdBy: req.user.userId
+            createdBy: req.user.username
         };
 
+        // Guardar producto
         products.push(newProduct);
+        
+        console.log('✅ Producto creado exitosamente:', newProduct.id);
+        console.log('📊 Total de productos ahora:', products.length);
 
         res.status(201).json({
             success: true,
             message: '✅ Producto creado exitosamente',
             data: newProduct
         });
+
     } catch (error) {
+        console.error('❌ Error al crear producto:', error);
         res.status(500).json({
             success: false,
             message: '❌ Error al crear producto'
@@ -80,6 +121,10 @@ const createProduct = (req, res) => {
 const updateProduct = (req, res) => {
     try {
         const productId = parseInt(req.params.id);
+        const { name, description, price, stock, category } = req.body;
+
+        console.log('✏️ Actualizando producto ID:', productId);
+
         const productIndex = products.findIndex(p => p.id === productId);
 
         if (productIndex === -1) {
@@ -89,9 +134,7 @@ const updateProduct = (req, res) => {
             });
         }
 
-        const { name, description, price, stock, category } = req.body;
-
-        // Actualizar solo los campos proporcionados
+        // Actualizar campos
         if (name) products[productIndex].name = name;
         if (description) products[productIndex].description = description;
         if (price) products[productIndex].price = parseFloat(price);
@@ -99,14 +142,18 @@ const updateProduct = (req, res) => {
         if (category) products[productIndex].category = category;
 
         products[productIndex].updatedAt = new Date();
-        products[productIndex].updatedBy = req.user.userId;
+        products[productIndex].updatedBy = req.user.username;
+
+        console.log('✅ Producto actualizado:', products[productIndex]);
 
         res.json({
             success: true,
             message: '✅ Producto actualizado exitosamente',
             data: products[productIndex]
         });
+
     } catch (error) {
+        console.error('❌ Error al actualizar producto:', error);
         res.status(500).json({
             success: false,
             message: '❌ Error al actualizar producto'
@@ -117,6 +164,8 @@ const updateProduct = (req, res) => {
 const deleteProduct = (req, res) => {
     try {
         const productId = parseInt(req.params.id);
+        console.log('🗑️ Eliminando producto ID:', productId);
+
         const productIndex = products.findIndex(p => p.id === productId);
 
         if (productIndex === -1) {
@@ -126,13 +175,19 @@ const deleteProduct = (req, res) => {
             });
         }
 
-        products.splice(productIndex, 1);
+        const deletedProduct = products.splice(productIndex, 1)[0];
+        
+        console.log('✅ Producto eliminado:', deletedProduct.name);
+        console.log('📊 Total de productos ahora:', products.length);
 
         res.json({
             success: true,
-            message: '✅ Producto eliminado exitosamente'
+            message: '✅ Producto eliminado exitosamente',
+            data: deletedProduct
         });
+
     } catch (error) {
+        console.error('❌ Error al eliminar producto:', error);
         res.status(500).json({
             success: false,
             message: '❌ Error al eliminar producto'
