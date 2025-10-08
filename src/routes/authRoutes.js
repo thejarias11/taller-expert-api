@@ -1,13 +1,13 @@
 const express = require('express');
-const { register, login } = require('../controllers/authController');
-// ELIMINA ESTA LÍNEA: const { authenticateToken } = require('../middleware/authMiddleware');
+const { login } = require('../controllers/authController'); // Solo importamos login
+// ELIMINAMOS el register del import
 
 const router = express.Router();
 
-// Ruta para registro de usuarios - PÚBLICA (sin autenticación)
-router.post('/register', register);
-
-// Ruta para inicio de sesión - PÚBLICA (sin autenticación)
+// SOLO RUTA DE LOGIN - ELIMINAMOS REGISTER
 router.post('/login', login);
+
+// ELIMINAMOS completamente la ruta de register
+// router.post('/register', register); // ← ESTA LÍNEA DEBE ELIMINARSE
 
 module.exports = router;
