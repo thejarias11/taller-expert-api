@@ -1,0 +1,163 @@
+EVIDENCIA GA10-220501097-AA12-EV01
+PLAN DE CAPACITACIÓN Y PRUEBAS DE ACEPTACIÓN (VERSIÓN PARA WORD)
+
+SERVICIO NACIONAL DE APRENDIZAJE – SENA
+ANÁLISIS Y DESARROLLO DE SOFTWARE
+
+DATOS GENERALES
+- Programa: Tecnólogo en Análisis y Desarrollo de Software (ADSO)
+- Ficha de caracterización: 2977421
+- Aprendiz: Jesus David Arias
+- Instructor: Jimmy Perea Gámez
+- Centro: Servicio Nacional de Aprendizaje SENA
+- Fecha: 12 de octubre de 2025
+
+Resultado de Aprendizaje: 220501097_04 – Implantar el software de acuerdo con los niveles de servicio establecidos con el cliente
+Actividad de Aprendizaje: GA10-220501097-AA12 – Capacitar a los usuarios y realizar pruebas de aceptación
+Evidencia de Desempeño: Elabora plan de capacitación y realización de pruebas de aceptación del cliente – GA10-220501097-AA12-EV01
+
+1. INTRODUCCIÓN
+Este documento presenta el plan de capacitación de 45 minutos para usuarios del sistema “Taller Expert” y el plan de Pruebas de Aceptación del Usuario (UAT). Está diseñado para copiar y pegar en Word, con lenguaje claro, listas y marcadores para agregar capturas.
+
+2. OBJETIVOS
+- Capacitar al usuario objetivo para operar las funciones clave: ingreso, productos, citas, ventas y dashboard.
+- Reforzar buenas prácticas de uso y seguridad.
+- Verificar junto con el cliente el cumplimiento de criterios de aceptación mediante UAT.
+
+3. PÚBLICO OBJETIVO Y ALCANCE
+- Perfil: Personal operativo de taller (administradores y empleados de mostrador).
+- Alcance: Operación diaria del sistema; no cubre tareas de desarrollo o administración de infraestructura.
+
+4. AGENDA DE CAPACITACIÓN (45 MIN)
+- 0:00 – 3:00 Introducción: objetivos, agenda, reglas de la sesión.
+- 3:00 – 7:00 Ingreso y roles: inicio de sesión, recuperación básica, roles y permisos.
+- 7:00 – 17:00 Productos: alta/edición/eliminación, filtros y búsqueda.
+- 17:00 – 27:00 Citas: creación, cambio de estado, filtros por fecha y estado.
+- 27:00 – 37:00 Ventas: carrito, totales y confirmación; ver historial.
+- 37:00 – 42:00 Dashboard: métricas clave, navegación y atajos.
+- 42:00 – 45:00 Preguntas, recordatorios y cierre.
+
+5. LIBRETO DETALLADO PARA CAPACITACIÓN (ACCIONES Y MENSAJES CLAVE)
+5.1 Apertura (0:00 – 3:00)
+- Mensaje: “Hoy aprenderán a usar Taller Expert para gestionar productos, citas y ventas de forma rápida y segura.”
+- Reglas: micrófonos en silencio; preguntas por chat o en intervalos; práctica al final de cada bloque.
+
+5.2 Ingreso y roles (3:00 – 7:00)
+- Acción: Mostrar URL https://taller-expert-api.onrender.com y pantalla de login.
+- Demostrar inicio de sesión con un usuario de prueba.
+- Explicar roles: Super Admin (total), Admin (operativo), Empleado (operativo parcial).
+[Inserte captura: Inicio de sesión]
+
+5.3 Productos (7:00 – 17:00)
+- Crear: Productos → Agregar → completar campos → Guardar.
+- Editar: seleccionar producto → Editar → Actualizar.
+- Eliminar: seleccionar producto → Eliminar → Confirmar.
+- Buscar/filtrar: barra de búsqueda y categoría.
+- Buenas prácticas: nombres claros, precios correctos, stock actualizado.
+[Inserte captura: Módulo de productos]
+
+5.4 Citas (17:00 – 27:00)
+- Crear: Citas → Nueva → completar datos del cliente, fecha y hora → Agendar.
+- Cambiar estado: Pendiente → Completada/Cancelada.
+- Filtros: por fecha/estado para seguimiento.
+- Buenas prácticas: verificar disponibilidad y registrar notas.
+[Inserte captura: Módulo de citas]
+
+5.5 Ventas (27:00 – 37:00)
+- Nueva: Ventas → Nueva → agregar productos y cantidades → Confirmar venta.
+- Historial: revisar ventas realizadas y filtrar por fecha.
+- Buenas prácticas: revisar totales antes de confirmar; corregir cantidades.
+[Inserte captura: Módulo de ventas]
+
+5.6 Dashboard (37:00 – 42:00)
+- Lectura de tarjetas de métricas.
+- Accesos rápidos a módulos.
+- Revisión rápida de notificaciones (si aplica).
+[Inserte captura: Dashboard]
+
+5.7 Cierre y preguntas (42:00 – 45:00)
+- Recapitular funciones vistas.
+- Resolver dudas.
+- Dejar canales de soporte y guía rápida en PDF.
+
+6. GUION DE VIDEO TUTORIAL (7–8 MIN)
+- Intro (0:00 – 0:25): Título “Taller Expert – Guía Rápida”; propósito del video; URL en pantalla.
+- Ingreso (0:25 – 1:00): Mostrar login y acceso correcto; tip de recuperación.
+- Productos (1:00 – 2:15): Crear/editar/eliminar; búsqueda y filtros.
+- Citas (2:15 – 3:30): Crear cita y cambiar estado.
+- Ventas (3:30 – 5:00): Agregar al carrito, revisar totales, confirmar y ver historial.
+- Dashboard (5:00 – 6:00): Métricas y navegación.
+- Cierre (6:00 – 7:30): Buenas prácticas, soporte y agradecimiento.
+[Inserte guion de voz en off y marcadores de pantalla según necesidad]
+
+7. ACTIVIDADES PRÁCTICAS DURANTE LA CAPACITACIÓN
+- Práctica 1 (Productos): crear dos productos, editar uno y eliminar otro ficticio.
+- Práctica 2 (Citas): agendar una cita, cambiar estado y filtrar por fecha.
+- Práctica 3 (Ventas): armar una venta con dos ítems y confirmar.
+- Práctica 4 (Dashboard): identificar métricas y atajos clave.
+
+8. EVALUACIÓN DE APRENDIZAJE
+- Instrumento: lista de verificación con 10 ítems (logro de tareas básicas).
+- Criterio de aprobación: completar al menos 8 de 10 acciones sin asistencia directa.
+- Retroalimentación: inmediata, con recomendaciones.
+
+9. PLAN DE PRUEBAS DE ACEPTACIÓN DEL USUARIO (UAT)
+9.1 Preparación
+- Ambiente: URL de producción y usuarios de prueba.
+- Datos: productos y citas de ejemplo; ventas de muestra.
+- Alcance: funcionalidades de productos, citas, ventas y dashboard.
+
+9.2 Criterios de aceptación (resumen)
+- Ingresar al sistema en menos de 10 segundos con credenciales válidas.
+- Crear/editar/eliminar productos sin errores.
+- Agendar citas y cambiar estado correctamente.
+- Realizar ventas y ver el historial con totales correctos.
+- Dashboard muestra métricas acordes a los datos.
+
+9.3 Casos de prueba (pasos y resultados esperados)
+- UAT-01 Ingreso: ingresar credenciales válidas → acceso al dashboard.
+- UAT-02 Crear producto: completar formulario válido → producto visible en lista.
+- UAT-03 Editar producto: cambiar precio → lista refleja nuevo precio.
+- UAT-04 Eliminar producto: confirmar → registro no visible.
+- UAT-05 Crear cita: completar datos → cita visible con estado Pendiente.
+- UAT-06 Cambiar estado cita: a Completada → reflejado en la lista.
+- UAT-07 Nueva venta: agregar 2 productos → total correcto y venta registrada.
+- UAT-08 Historial de ventas: filtrar por fecha → resultados correctos.
+- UAT-09 Dashboard: verificar métricas → coinciden con datos cargados.
+
+9.4 Evidencias
+- Capturas de pantalla por cada caso aprobado.
+- Registro de incidencias con fecha/hora y detalle.
+
+9.5 Acta de aceptación (plantilla)
+- Proyecto: Taller Expert.
+- Fecha: __________.
+- Participantes: Cliente/Usuario líder – Instructor – Desarrollador.
+- Resultado: Aceptado / Aceptado con observaciones / No aceptado.
+- Observaciones y compromisos: ________________________________.
+- Firmas: ______________________________________.
+
+10. LOGÍSTICA Y RECURSOS
+- Sala con proyector o herramienta de videoconferencia.
+- Acceso a internet y a la URL de producción.
+- Usuarios de práctica para asistentes.
+- Material de apoyo: este documento + guía rápida PDF + video tutorial.
+
+11. RIESGOS Y MITIGACIONES
+- Caída del servicio: tener video offline y datos locales de demostración.
+- Lentitud de internet: usar capturas y explicar flujos sin ejecutar en vivo.
+- Pérdida de foco del grupo: dinámicas de práctica cada 10–15 minutos.
+
+12. CRONOGRAMA Y RESPONSABLES
+- Preparación de material: 12–14 de octubre de 2025 – Responsable: Jesus David Arias.
+- Grabación y edición del video: 15–16 de octubre de 2025 – Responsable: Jesus David Arias.
+- Sesión de capacitación: 17 de octubre de 2025 – Facilitador: Jesus David Arias.
+- UAT con cliente: 18 de octubre de 2025 – Responsable: Jesus David Arias e Instructor.
+
+13. CONCLUSIONES
+El plan propuesto permite capacitar a usuarios finales en 45 minutos, reforzando los procesos clave del sistema y asegurando la validación del producto mediante UAT. La combinación de explicación guiada, práctica supervisada y verificación por criterios de aceptación facilita el cierre formal con el cliente y la mejora continua del software.
+
+Nota de uso en Word
+- Asigne estilos de Título 1/2/3 para cada sección.
+- Inserte capturas o enlaces al video donde se indican los marcadores.
+- Si se requiere rúbrica, anexe la lista de verificación de evaluación como tabla simple.

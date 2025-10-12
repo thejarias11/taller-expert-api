@@ -292,7 +292,9 @@
 
             <!-- Sección de Usuarios -->
             <div id="users" class="section">
-                <h2>👤 Información del Usuario</h2>
+                <h2>� Gestión de Usuarios</h2>
+                
+                <!-- Perfil del usuario actual -->
                 <div class="user-profile-section">
                     <div class="profile-card">
                         <div class="profile-header">
@@ -319,7 +321,59 @@
                         </div>
                     </div>
                 </div>
-                <div id="userInfo" class="data-container"></div>
+
+                <!-- Gestión de usuarios (solo para admin) -->
+                <div id="userManagement" class="admin-only" style="display: none;">
+                    <h3>👥 Administrar Usuarios del Sistema</h3>
+                    
+                    <div class="actions">
+                        <button onclick="loadUsers()" class="btn-primary">🔄 Cargar Usuarios</button>
+                        <button onclick="showCreateUser()" class="btn-success">+ Crear Usuario</button>
+                    </div>
+
+                    <div id="usersList" class="data-container"></div>
+                </div>
+
+                <!-- Información técnica del usuario -->
+                <div id="userInfo" class="info-section"></div>
+            </div>
+
+            <!-- Formulario para crear usuario (solo admin) -->
+            <div id="createUserForm" class="form-section" style="display: none;">
+                <h3>➕ Crear Nuevo Usuario</h3>
+                <form id="userForm">
+                    <div class="form-group">
+                        <label>Nombre completo:</label>
+                        <input type="text" id="userName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Usuario (username):</label>
+                        <input type="text" id="userUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" id="userEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña:</label>
+                        <input type="password" id="userPassword" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar contraseña:</label>
+                        <input type="password" id="userPasswordConfirm" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Rol:</label>
+                        <select id="userRole" required>
+                            <option value="">Seleccionar rol...</option>
+                            <option value="empleado">Empleado</option>
+                            <option value="admin">Administrador</option>
+                            <option value="super_admin">Super Administrador</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-success">Crear Usuario</button>
+                    <button type="button" onclick="hideCreateUser()" class="btn-secondary">Cancelar</button>
+                </form>
             </div>
         </main>
 
@@ -327,103 +381,139 @@
     </div>
 
     <script>
-        // Verificación inmediata de autenticación (antes de que se cargue la página)
-        (function() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.replace('login.html');
-                return;
-            }
-        })();
-
-        // Verificar autenticación al cargar
+        // Verificar autenticación al cargar (SIMPLIFICADO)
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Dashboard cargando...');
+            
             const token = localStorage.getItem('token');
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             
+            console.log('🔍 Token en localStorage:', token ? 'SÍ' : 'NO');
+            console.log('👤 Usuario en localStorage:', user.username || 'NO');
+            
+            // Si no hay token, redirigir directamente
             if (!token) {
-                alert('Debe iniciar sesión para acceder al dashboard');
+                console.log('❌ No hay token, redirigiendo a login...');
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Verificar si el token es válido haciendo una petición al servidor
-            try {
-                const response = await fetch('/api/auth/verify', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Token inválido');
-                }
-
-                // Si llegamos aquí, el token es válido
-                document.getElementById('userWelcome').textContent = 
-                    `Bienvenido, ${user.username} (${user.role})`;
-                
-                showUserInfo();
-                
-            } catch (error) {
-                console.error('Error de autenticación:', error);
-                alert('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                localStorage.removeItem('rememberMe');
-                window.location.href = 'login.html';
+            // Mostrar información del usuario inmediatamente
+            console.log('✅ Token encontrado, mostrando dashboard');
+            const welcomeElement = document.getElementById('userWelcome');
+            if (welcomeElement) {
+                welcomeElement.textContent = `Bienvenido, ${user.username || 'Usuario'} (${user.role || 'Usuario'})`;
             }
+            
+            // Mostrar información de usuario después de que el DOM esté listo
+            setTimeout(() => {
+                showUserInfo();
+            }, 100);
+            
+            // Verificar token en segundo plano (sin bloquear la UI)
+            setTimeout(async () => {
+                try {
+                    console.log('🔍 Verificando token en segundo plano...');
+                    const response = await fetch('/api/auth/verify', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        console.log('✅ Token válido');
+                    } else {
+                        console.log('⚠️ Token inválido, pero continuando...');
+                        // No redirigir automáticamente, dejar que el usuario use la app
+                    }
+                } catch (error) {
+                    console.log('⚠️ Error verificando token, pero continuando...', error.message);
+                    // No hacer nada, dejar que el usuario use la app
+                }
+            }, 1000);
         });
 
         function showSection(sectionId) {
+            console.log('🔄 Cambiando a sección:', sectionId);
+            
             // Ocultar todas las secciones
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
             
-            // Ocultar todos los formularios al cambiar de pestaña
-            hideCreateProduct();
-            hideCreateAppointment();
-            hideCreateSale();
+            // Ocultar todos los formularios al cambiar de pestaña (con verificación de existencia)
+            try {
+                if (typeof hideCreateProduct === 'function') hideCreateProduct();
+                if (typeof hideCreateAppointment === 'function') hideCreateAppointment();
+                if (typeof hideCreateSale === 'function') hideCreateSale();
+                if (typeof hideCreateUser === 'function') hideCreateUser();
+            } catch (error) {
+                console.log('⚠️ Error ocultando formularios:', error.message);
+            }
             
             // Mostrar la sección seleccionada
-            document.getElementById(sectionId).classList.add('active');
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                console.log('✅ Sección activada:', sectionId);
+            } else {
+                console.error('❌ Sección no encontrada:', sectionId);
+                return;
+            }
             
             // Cargar datos específicos de la sección
-            if (sectionId === 'sales') {
-                loadSalesStats();
-                loadSales();
+            try {
+                if (sectionId === 'sales') {
+                    if (typeof loadSalesStats === 'function') loadSalesStats();
+                    if (typeof loadSales === 'function') loadSales();
+                } else if (sectionId === 'users') {
+                    if (typeof loadUsers === 'function') loadUsers();
+                }
+            } catch (error) {
+                console.log('⚠️ Error cargando datos de sección:', error.message);
             }
         }
 
         function showUserInfo() {
+            console.log('📋 Mostrando información del usuario...');
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const token = localStorage.getItem('token');
             
-            // Actualizar información del perfil
-            document.getElementById('profileName').textContent = user.nombre || user.username || 'Usuario';
-            document.getElementById('profileRole').textContent = getRoleDisplayName(user.role);
-            document.getElementById('profileEmail').textContent = user.email || 'admin@tallerexpert.com';
-            document.getElementById('lastLogin').textContent = new Date().toLocaleString('es-ES');
-            document.getElementById('userPermissions').textContent = getRolePermissions(user.role);
+            console.log('👤 Datos del usuario:', user);
             
-            // Información técnica en la sección inferior
-            document.getElementById('userInfo').innerHTML = `
-                <div class="info-card technical-info">
-                    <h3>� Información Técnica</h3>
-                    <div class="tech-details">
-                        <div class="tech-item">
-                            <strong>ID de Usuario:</strong> 
-                            <code>${user.userId || user.id || 'N/A'}</code>
-                        </div>
-                        <div class="tech-item">
-                            <strong>Nombre de Usuario:</strong> 
-                            <code>${user.username}</code>
-                        </div>
-                        <div class="tech-item">
-                            <strong>Rol del Sistema:</strong> 
-                            <code>${user.role}</code>
-                        </div>
+            // Actualizar información del perfil - con verificación de existencia
+            const profileName = document.getElementById('profileName');
+            const profileRole = document.getElementById('profileRole');
+            const profileEmail = document.getElementById('profileEmail');
+            const lastLogin = document.getElementById('lastLogin');
+            const userPermissions = document.getElementById('userPermissions');
+            
+            if (profileName) profileName.textContent = user.nombre || user.username || 'Usuario';
+            if (profileRole) profileRole.textContent = getRoleDisplayName(user.role);
+            if (profileEmail) profileEmail.textContent = user.email || 'admin@tallerexpert.com';
+            if (lastLogin) lastLogin.textContent = new Date().toLocaleString('es-ES');
+            if (userPermissions) userPermissions.textContent = getRolePermissions(user.role);
+            
+            // Información técnica en la sección inferior - con verificación
+            const userInfoElement = document.getElementById('userInfo');
+            if (userInfoElement) {
+                console.log('✅ Elemento userInfo encontrado, actualizando...');
+                userInfoElement.innerHTML = `
+                    <div class="info-card technical-info">
+                        <h3>🔧 Información Técnica</h3>
+                        <div class="tech-details">
+                            <div class="tech-item">
+                                <strong>ID de Usuario:</strong> 
+                                <code>${user.userId || user.id || 'N/A'}</code>
+                            </div>
+                            <div class="tech-item">
+                                <strong>Nombre de Usuario:</strong> 
+                                <code>${user.username}</code>
+                            </div>
+                            <div class="tech-item">
+                                <strong>Rol del Sistema:</strong> 
+                                <code>${user.role}</code>
+                            </div>
                         <div class="tech-item">
                             <strong>Token de Sesión:</strong> 
                             <code class="token-preview">${token ? token.substring(0, 30) + '...' : 'No disponible'}</code>
@@ -434,7 +524,12 @@
                         </div>
                     </div>
                 </div>
-            `;
+                `;
+            } else {
+                console.log('❌ Elemento userInfo no encontrado');
+            }
+            
+            console.log('✅ showUserInfo completado');
         }
 
         function getRoleDisplayName(role) {
@@ -443,9 +538,283 @@
                 case 'admin': return '🔑 Administrador';
                 case 'manager': return '📊 Gerente';
                 case 'employee': return '👤 Empleado';
+                case 'empleado': return '👤 Empleado';
                 default: return '👤 Usuario';
             }
         }
+
+        function getRolePermissions(role) {
+            switch(role) {
+                case 'super_admin': return 'Acceso completo al sistema';
+                case 'admin': return 'Gestión de usuarios y configuración';
+                case 'manager': return 'Supervisión y reportes';
+                case 'employee': 
+                case 'empleado': return 'Operaciones básicas';
+                default: return 'Acceso limitado';
+            }
+        }
+
+        // ========== FUNCIONES DE GESTIÓN DE USUARIOS ==========
+        async function loadUsers() {
+            console.log('👥 Cargando usuarios...');
+            const token = localStorage.getItem('token');
+            const messageDiv = document.getElementById('message');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            console.log('🔐 Token para usuarios:', token ? 'SÍ' : 'NO');
+            console.log('👤 Usuario actual:', user.username, '- Rol:', user.role);
+
+            // Solo mostrar gestión de usuarios para admin
+            if (user.role === 'admin' || user.role === 'super_admin') {
+                console.log('✅ Usuario autorizado para gestión');
+                document.getElementById('userManagement').style.display = 'block';
+            } else {
+                console.log('❌ Usuario NO autorizado para gestión');
+                return;
+            }
+
+            try {
+                console.log('📤 Enviando petición de usuarios...');
+                const response = await fetch('/api/auth/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                console.log('📥 Respuesta usuarios:', response.status, response.statusText);
+                const data = await response.json();
+                console.log('📊 Datos de usuarios:', data);
+
+                if (data.success) {
+                    if (data.data && data.data.length > 0) {
+                        let html = '<h3>👥 Lista de Usuarios del Sistema</h3>';
+                        html += '<div class="users-grid">';
+                        
+                        data.data.forEach(user => {
+                            const roleClass = user.role === 'super_admin' ? 'role-super-admin' : 
+                                             user.role === 'admin' ? 'role-admin' : 'role-employee';
+                            
+                            html += `
+                                <div class="user-card">
+                                    <div class="user-info">
+                                        <h4>${user.nombre}</h4>
+                                        <p><strong>Usuario:</strong> ${user.username}</p>
+                                        <p><strong>Email:</strong> ${user.email || 'No especificado'}</p>
+                                        <p><strong>Rol:</strong> <span class="${roleClass}">${getRoleDisplayName(user.role)}</span></p>
+                                        <p><strong>Creado:</strong> ${new Date(user.createdAt).toLocaleDateString()}</p>
+                                    </div>`;
+                            
+                            // Botones de acción
+                            html += `<div class="user-actions">`;
+                            
+                            // Botón editar para todos los usuarios
+                            html += `<button onclick="editUser('${user.id}')" class="btn-warning btn-sm">✏️ Editar</button>`;
+                            
+                            // Solo mostrar botón eliminar si no es el admin principal
+                            if (user.username !== 'admin' || user.role !== 'super_admin') {
+                                html += `<button onclick="deleteUser('${user.id}', '${user.username}')" class="btn-danger btn-sm">🗑️ Eliminar</button>`;
+                            } else {
+                                html += `<span class="protected-user">🔐 Usuario protegido</span>`;
+                            }
+                            
+                            html += `</div>`;
+                            
+                            html += `</div>`;
+                        });
+                        
+                        html += '</div>';
+                        document.getElementById('usersList').innerHTML = html;
+                    } else {
+                        document.getElementById('usersList').innerHTML = `
+                            <div class="info">
+                                📝 No hay usuarios registrados.
+                            </div>
+                        `;
+                    }
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="error">❌ ${data.message}</div>
+                    `;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+
+        function showCreateUser() {
+            document.getElementById('createUserForm').style.display = 'block';
+        }
+
+        function hideCreateUser() {
+            document.getElementById('createUserForm').style.display = 'none';
+            const form = document.getElementById('userForm');
+            form.reset();
+            form.removeAttribute('data-editing');
+            
+            // Restaurar título y botón originales
+            document.querySelector('#createUserForm h3').textContent = '➕ Crear Nuevo Usuario';
+            document.querySelector('#userForm button[type="submit"]').textContent = 'Crear Usuario';
+        }
+
+        async function editUser(userId) {
+            console.log('✏️ Editando usuario:', userId);
+            
+            try {
+                // Obtener datos del usuario
+                const response = await makeAuthenticatedRequest(`/api/auth/users/${userId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const user = data.data;
+                    
+                    // Llenar el formulario con los datos del usuario
+                    document.getElementById('userName').value = user.nombre;
+                    document.getElementById('userUsername').value = user.username;
+                    document.getElementById('userEmail').value = user.email || '';
+                    document.getElementById('userRole').value = user.role;
+                    
+                    // Limpiar campos de contraseña
+                    document.getElementById('userPassword').value = '';
+                    document.getElementById('userPasswordConfirm').value = '';
+                    
+                    // Marcar formulario como modo edición
+                    const form = document.getElementById('userForm');
+                    form.setAttribute('data-editing', userId);
+                    
+                    // Cambiar título y botón
+                    document.querySelector('#createUserForm h3').textContent = '✏️ Editar Usuario';
+                    document.querySelector('#userForm button[type="submit"]').textContent = 'Actualizar Usuario';
+                    
+                    // Mostrar formulario
+                    showCreateUser();
+                    
+                    showMessage('Editando usuario: ' + user.nombre, 'info');
+                } else {
+                    showMessage('Error al cargar usuario: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al cargar usuario para editar', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        async function deleteUser(userId, username) {
+            if (!confirm(`¿Está seguro de eliminar el usuario "${username}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await makeAuthenticatedRequest(`/api/auth/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Usuario eliminado correctamente', 'success');
+                    loadUsers(); // Recargar lista
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al eliminar usuario', 'error');
+            }
+        }
+
+        // Event listener para el formulario de crear/editar usuario
+        document.getElementById('userForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const isEditing = form.hasAttribute('data-editing');
+            const userId = form.getAttribute('data-editing');
+            
+            console.log(isEditing ? '✏️ Editando usuario...' : '👤 Creando nuevo usuario...');
+            
+            const userData = {
+                nombre: document.getElementById('userName').value,
+                username: document.getElementById('userUsername').value,
+                email: document.getElementById('userEmail').value,
+                role: document.getElementById('userRole').value
+            };
+
+            // Solo incluir contraseña si no está editando o si se especificó una nueva
+            const password = document.getElementById('userPassword').value;
+            const passwordConfirm = document.getElementById('userPasswordConfirm').value;
+            
+            if (!isEditing || password) {
+                // Validar contraseña para usuarios nuevos o si se está cambiando
+                if (!password) {
+                    showMessage('La contraseña es obligatoria', 'error');
+                    return;
+                }
+                
+                if (password !== passwordConfirm) {
+                    console.log('❌ Las contraseñas no coinciden');
+                    showMessage('Las contraseñas no coinciden', 'error');
+                    return;
+                }
+                
+                userData.password = password;
+            }
+
+            console.log('📊 Datos del usuario:', { ...userData, password: userData.password ? '***' : 'No cambiar' });
+
+            try {
+                let response, url, method;
+                
+                if (isEditing) {
+                    console.log('📤 Enviando petición de actualización...');
+                    console.log('🔧 UserId:', userId);
+                    console.log('📊 Datos a enviar:', userData);
+                    url = `/api/auth/users/${userId}`;
+                    method = 'PUT';
+                } else {
+                    console.log('📤 Enviando petición de registro...');
+                    url = '/api/auth/register';
+                    method = 'POST';
+                }
+                
+                console.log('🌐 URL:', url);
+                console.log('🔧 Método:', method);
+                
+                response = await makeAuthenticatedRequest(url, {
+                    method: method,
+                    body: JSON.stringify(userData)
+                });
+                
+                console.log('📥 Status de respuesta:', response.status);
+                console.log('📋 Response OK:', response.ok);
+
+                console.log('📥 Respuesta:', response.status, response.statusText);
+                const data = await response.json();
+                console.log('📊 Datos de respuesta:', data);
+
+                if (data.success) {
+                    const message = isEditing ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente';
+                    showMessage(message, 'success');
+                    
+                    // Resetear formulario
+                    this.reset();
+                    this.removeAttribute('data-editing');
+                    
+                    // Restaurar título y botón
+                    document.querySelector('#createUserForm h3').textContent = '➕ Crear Nuevo Usuario';
+                    document.querySelector('#userForm button[type="submit"]').textContent = 'Crear Usuario';
+                    
+                    hideCreateUser();
+                    loadUsers(); // Recargar lista
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                const errorMessage = isEditing ? 'Error al actualizar usuario' : 'Error al crear usuario';
+                showMessage(errorMessage, 'error');
+                console.error('Error:', error);
+            }
+        });
 
         function getRolePermissions(role) {
             switch(role) {
@@ -558,9 +927,12 @@
             document.getElementById('createAppointmentForm').style.display = 'none';
         }
 
-        // Crear nuevo producto
+        // Crear/Editar producto
         document.getElementById('productForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            const editingId = this.getAttribute('data-editing');
+            const isEditing = editingId !== null;
             
             const productData = {
                 name: document.getElementById('productName').value,
@@ -571,20 +943,25 @@
             };
 
             try {
-                const response = await makeAuthenticatedRequest('/api/products', {
-                    method: 'POST',
+                const url = isEditing ? `/api/products/${editingId}` : '/api/products';
+                const method = isEditing ? 'PUT' : 'POST';
+                
+                const response = await makeAuthenticatedRequest(url, {
+                    method: method,
                     body: JSON.stringify(productData)
                 });
 
                 const data = await response.json();
                 
                 if (data.success) {
+                    const message = isEditing ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente';
                     document.getElementById('message').innerHTML = `
-                        <div class="success">✅ Producto creado exitosamente</div>
+                        <div class="success">✅ ${message}</div>
                     `;
                     hideCreateProduct();
                     loadProducts(); // Recargar la lista
-                    document.getElementById('productForm').reset(); // Limpiar formulario
+                    this.reset(); // Limpiar formulario
+                    this.removeAttribute('data-editing'); // Limpiar modo edición
                 } else {
                     document.getElementById('message').innerHTML = `
                         <div class="error">❌ ${data.message}</div>
@@ -600,11 +977,13 @@
             }
         });
 
-        // Crear nueva cita
+        // Crear/Editar cita
         document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const token = localStorage.getItem('token');
+            const editingId = this.getAttribute('data-editing');
+            const isEditing = editingId !== null;
+            
             const appointmentData = {
                 clientName: document.getElementById('clientName').value,
                 clientPhone: document.getElementById('clientPhone').value,
@@ -614,23 +993,25 @@
             };
 
             try {
-                const response = await fetch('/api/appointments', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
+                const url = isEditing ? `/api/appointments/${editingId}` : '/api/appointments';
+                const method = isEditing ? 'PUT' : 'POST';
+                
+                const response = await makeAuthenticatedRequest(url, {
+                    method: method,
                     body: JSON.stringify(appointmentData)
                 });
 
                 const data = await response.json();
                 
                 if (data.success) {
+                    const message = isEditing ? 'Cita actualizada exitosamente' : 'Cita creada exitosamente';
                     document.getElementById('message').innerHTML = `
-                        <div class="success">✅ ${data.message}</div>
+                        <div class="success">✅ ${message}</div>
                     `;
                     hideCreateAppointment();
                     loadAppointments(); // Recargar la lista
+                    this.reset(); // Limpiar formulario
+                    this.removeAttribute('data-editing'); // Limpiar modo edición
                 } else {
                     document.getElementById('message').innerHTML = `
                         <div class="error">❌ ${data.message}</div>
@@ -647,6 +1028,7 @@
         async function loadProducts() {
             const token = localStorage.getItem('token');
             const messageDiv = document.getElementById('message');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
 
             try {
                 const response = await fetch('/api/products', {
@@ -665,13 +1047,24 @@
                         data.data.forEach(product => {
                             html += `
                                 <div class="product-card">
-                                    <h4>${product.name}</h4>
-                                    <p>${product.description}</p>
-                                    <p><strong>Precio:</strong> $${product.price}</p>
-                                    <p><strong>Stock:</strong> ${product.stock} unidades</p>
-                                    <p><strong>Categoría:</strong> ${product.category}</p>
-                                </div>
-                            `;
+                                    <div class="product-info">
+                                        <h4>${product.name}</h4>
+                                        <p>${product.description}</p>
+                                        <p><strong>Precio:</strong> $${product.price}</p>
+                                        <p><strong>Stock:</strong> ${product.stock} unidades</p>
+                                        <p><strong>Categoría:</strong> ${product.category}</p>
+                                    </div>`;
+                            
+                            // Solo mostrar botones de editar/eliminar si es admin
+                            if (user.role === 'admin' || user.role === 'super_admin') {
+                                html += `
+                                    <div class="product-actions">
+                                        <button onclick="console.log('Product ID:', '${product.id}'); editProduct('${product.id}')" class="btn-warning btn-sm">✏️ Editar</button>
+                                        <button onclick="console.log('Delete Product ID:', '${product.id}'); deleteProduct('${product.id}', '${product.name}')" class="btn-danger btn-sm">🗑️ Eliminar</button>
+                                    </div>`;
+                            }
+                            
+                            html += `</div>`;
                         });
                         
                         html += '</div>';
@@ -716,13 +1109,25 @@
                         
                         data.data.forEach(appointment => {
                             const date = new Date(appointment.scheduledDate);
+                            const statusClass = appointment.status === 'completed' ? 'status-completed' : 
+                                               appointment.status === 'cancelled' ? 'status-cancelled' : 'status-pending';
+                            
                             html += `
                                 <div class="appointment-card">
-                                    <h4>${appointment.clientName} - ${appointment.motorcycleModel}</h4>
-                                    <p><strong>Servicio:</strong> ${appointment.serviceType}</p>
-                                    <p><strong>Teléfono:</strong> ${appointment.clientPhone}</p>
-                                    <p><strong>Fecha:</strong> ${date.toLocaleString()}</p>
-                                    <p><strong>Estado:</strong> ${appointment.status}</p>
+                                    <div class="appointment-info">
+                                        <h4>${appointment.clientName} - ${appointment.motorcycleModel}</h4>
+                                        <p><strong>Servicio:</strong> ${appointment.serviceType}</p>
+                                        <p><strong>Teléfono:</strong> ${appointment.clientPhone}</p>
+                                        <p><strong>Fecha:</strong> ${date.toLocaleString()}</p>
+                                        <p><strong>Estado:</strong> <span class="${statusClass}">${appointment.status}</span></p>
+                                    </div>
+                                    <div class="appointment-actions">
+                                        <button onclick="console.log('Appointment ID:', '${appointment.id}'); editAppointment('${appointment.id}')" class="btn-warning btn-sm">✏️ Editar</button>
+                                        <button onclick="console.log('Delete Appointment ID:', '${appointment.id}'); deleteAppointment('${appointment.id}', '${appointment.clientName}')" class="btn-danger btn-sm">🗑️ Eliminar</button>
+                                        ${appointment.status === 'pending' || appointment.status === 'agendada' ? 
+                                            `<button onclick="console.log('Complete Appointment ID:', '${appointment.id}'); completeAppointment('${appointment.id}')" class="btn-success btn-sm">✅ Completar</button>` : 
+                                            ''}
+                                    </div>
                                 </div>
                             `;
                         });
@@ -732,7 +1137,7 @@
                     } else {
                         document.getElementById('appointmentsList').innerHTML = `
                             <div class="info">
-                                📝 No hay citas agendadas. ¡Agrega la primera!
+                                📝 No hay citas agendadas. ¡Agenda la primera!
                             </div>
                         `;
                     }
@@ -864,6 +1269,10 @@
                                         `<li>${item.productName} - Cant: ${item.quantity} - $${item.subtotal.toLocaleString()}</li>`
                                     ).join('')}
                                 </ul>
+                            </div>
+                            <div class="sale-actions">
+                                <button onclick="viewSaleDetails('${sale.id}')" class="btn-info btn-sm">👁️ Ver Detalles</button>
+                                <button onclick="deleteSale('${sale.id}', '${sale.saleNumber}')" class="btn-danger btn-sm">🗑️ Eliminar</button>
                             </div>
                         </div>
                     `;
@@ -1325,6 +1734,296 @@
                 serviceFilter.addEventListener('change', filterAppointments);
             }
         });
+
+        // ========== FUNCIONES CRUD PARA PRODUCTOS ==========
+        async function editProduct(productId) {
+            console.log('🔧 editProduct llamado con ID:', productId, 'tipo:', typeof productId);
+            try {
+                const response = await makeAuthenticatedRequest(`/api/products/${productId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const product = data.data;
+                    
+                    // Mostrar formulario con datos precargados
+                    document.getElementById('createProductForm').style.display = 'block';
+                    document.getElementById('productName').value = product.name;
+                    document.getElementById('productDescription').value = product.description;
+                    document.getElementById('productPrice').value = product.price;
+                    document.getElementById('productStock').value = product.stock;
+                    document.getElementById('productCategory').value = product.category;
+                    
+                    // Cambiar el formulario para modo edición
+                    const form = document.getElementById('productForm');
+                    form.setAttribute('data-editing', productId);
+                    
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.textContent = 'Actualizar Producto';
+                    
+                    const title = document.querySelector('#createProductForm h3');
+                    title.textContent = '✏️ Editar Producto';
+                    
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al cargar producto para edición', 'error');
+            }
+        }
+
+        async function deleteProduct(productId, productName) {
+            console.log('🗑️ deleteProduct llamado con ID:', productId, 'tipo:', typeof productId);
+            
+            if (!confirm(`¿Está seguro de eliminar el producto "${productName}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await makeAuthenticatedRequest(`/api/products/${productId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Producto eliminado correctamente', 'success');
+                    loadProducts(); // Recargar lista
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al eliminar producto', 'error');
+            }
+        }
+
+        // ========== FUNCIONES CRUD PARA CITAS ==========
+        async function editAppointment(appointmentId) {
+            console.log('🔧 editAppointment llamado con ID:', appointmentId, 'tipo:', typeof appointmentId);
+            try {
+                const response = await makeAuthenticatedRequest(`/api/appointments/${appointmentId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const appointment = data.data;
+                    
+                    // Mostrar formulario con datos precargados
+                    document.getElementById('createAppointmentForm').style.display = 'block';
+                    document.getElementById('clientName').value = appointment.clientName;
+                    document.getElementById('clientPhone').value = appointment.clientPhone;
+                    document.getElementById('motorcycleModel').value = appointment.motorcycleModel;
+                    document.getElementById('serviceType').value = appointment.serviceType;
+                    
+                    // Convertir fecha para input datetime-local
+                    const date = new Date(appointment.scheduledDate);
+                    const formattedDate = date.toISOString().slice(0, 16);
+                    document.getElementById('scheduledDate').value = formattedDate;
+                    
+                    // Cambiar el formulario para modo edición
+                    const form = document.getElementById('appointmentForm');
+                    form.setAttribute('data-editing', appointmentId);
+                    
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.textContent = 'Actualizar Cita';
+                    
+                    const title = document.querySelector('#createAppointmentForm h3');
+                    title.textContent = '✏️ Editar Cita';
+                    
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al cargar cita para edición', 'error');
+            }
+        }
+
+        async function deleteAppointment(appointmentId, clientName) {
+            if (!confirm(`¿Está seguro de eliminar la cita de "${clientName}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await makeAuthenticatedRequest(`/api/appointments/${appointmentId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Cita eliminada correctamente', 'success');
+                    loadAppointments(); // Recargar lista
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al eliminar cita', 'error');
+            }
+        }
+
+        async function completeAppointment(appointmentId) {
+            try {
+                const response = await makeAuthenticatedRequest(`/api/appointments/${appointmentId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: 'completed' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Cita marcada como completada', 'success');
+                    loadAppointments(); // Recargar lista
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al completar cita', 'error');
+            }
+        }
+
+        // ========== FUNCIONES CRUD PARA VENTAS ==========
+        async function viewSaleDetails(saleId) {
+            try {
+                const response = await makeAuthenticatedRequest(`/api/sales/${saleId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const sale = data.data;
+                    const date = new Date(sale.createdAt);
+                    
+                    let itemsHtml = sale.items.map(item => 
+                        `<tr>
+                            <td>${item.productName}</td>
+                            <td>${item.quantity}</td>
+                            <td>$${item.price.toLocaleString()}</td>
+                            <td>$${item.subtotal.toLocaleString()}</td>
+                        </tr>`
+                    ).join('');
+                    
+                    const detailsHtml = `
+                        <div class="modal-overlay" onclick="closeSaleDetails()">
+                            <div class="modal-content" onclick="event.stopPropagation()">
+                                <div class="modal-header">
+                                    <h3>🧾 Detalles de Venta - ${sale.saleNumber}</h3>
+                                    <button onclick="closeSaleDetails()" class="close-btn">✖️</button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="sale-details">
+                                        <p><strong>Vendedor:</strong> ${sale.sellerName}</p>
+                                        <p><strong>Fecha:</strong> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</p>
+                                        <p><strong>Método de Pago:</strong> ${sale.paymentMethod}</p>
+                                        <p><strong>Estado:</strong> ${sale.status}</p>
+                                        ${sale.notes ? `<p><strong>Notas:</strong> ${sale.notes}</p>` : ''}
+                                    </div>
+                                    <table class="items-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio Unit.</th>
+                                                <th>Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${itemsHtml}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="total-row">
+                                                <th colspan="3">TOTAL:</th>
+                                                <th>$${sale.totalAmount.toLocaleString()}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.insertAdjacentHTML('beforeend', detailsHtml);
+                    
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al cargar detalles de venta', 'error');
+            }
+        }
+
+        function closeSaleDetails() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        async function deleteSale(saleId, saleNumber) {
+            if (!confirm(`¿Está seguro de eliminar la venta "${saleNumber}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await makeAuthenticatedRequest(`/api/sales/${saleId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Venta eliminada correctamente', 'success');
+                    loadSales(); // Recargar lista
+                    loadSalesStats(); // Actualizar estadísticas
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al eliminar venta', 'error');
+            }
+        }
+
+        // ========== FUNCIÓN HELPER PARA MOSTRAR MENSAJES ==========
+        function showMessage(message, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            const typeClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            
+            messageDiv.innerHTML = `<div class="${typeClass}">${icon} ${message}</div>`;
+            
+            // Auto-ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // ========== MODIFICAR FORMULARIOS PARA SOPORTAR EDICIÓN ==========
+        // Event listeners duplicados eliminados - usando solo los originales modificados
+
+        // Modificar las funciones hide para resetear modo edición
+        function hideCreateProduct() {
+            document.getElementById('createProductForm').style.display = 'none';
+            const form = document.getElementById('productForm');
+            form.reset();
+            form.removeAttribute('data-editing');
+            
+            // Restaurar textos originales
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Guardar Producto';
+            
+            const title = document.querySelector('#createProductForm h3');
+            title.textContent = '➕ Agregar Nuevo Producto';
+        }
+
+        function hideCreateAppointment() {
+            document.getElementById('createAppointmentForm').style.display = 'none';
+            const form = document.getElementById('appointmentForm');
+            form.reset();
+            form.removeAttribute('data-editing');
+            
+            // Restaurar textos originales
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Agendar Cita';
+            
+            const title = document.querySelector('#createAppointmentForm h3');
+            title.textContent = '📅 Agendar Nueva Cita';
+        }
+
     </script>
 </body>
 </html>

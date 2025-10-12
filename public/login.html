@@ -130,6 +130,8 @@
             const btnIcon = submitBtn.querySelector('.btn-icon');
             const loadingSpinner = submitBtn.querySelector('.loading-spinner');
 
+            console.log('🚀 Iniciando login con:', { username, password: '***' });
+
             // Mostrar loading
             submitBtn.disabled = true;
             submitBtn.classList.add('loading');
@@ -138,6 +140,7 @@
             loadingSpinner.style.display = 'block';
 
             try {
+                console.log('📤 Enviando petición de login...');
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
@@ -146,9 +149,12 @@
                     body: JSON.stringify({ username, password })
                 });
 
+                console.log('📥 Respuesta recibida:', response.status, response.statusText);
                 const data = await response.json();
+                console.log('📊 Datos de respuesta:', data);
 
                 if (data.success) {
+                    console.log('✅ Login exitoso');
                     messageDiv.innerHTML = `
                         <div class="success-modern">
                             <i class="fas fa-check-circle"></i>
@@ -162,6 +168,7 @@
                     // Guardar datos en localStorage
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
+                    console.log('💾 Datos guardados en localStorage');
                     
                     // Recordar sesión si está marcado
                     const rememberMe = document.getElementById('rememberMe').checked;
@@ -171,9 +178,11 @@
                     
                     // Redirigir después de 1.5 segundos
                     setTimeout(() => {
+                        console.log('🔄 Redirigiendo al dashboard...');
                         window.location.href = 'dashboard.html';
                     }, 1500);
                 } else {
+                    console.log('❌ Login fallido:', data.message);
                     messageDiv.innerHTML = `
                         <div class="error-modern">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -185,6 +194,7 @@
                     `;
                 }
             } catch (error) {
+                console.error('💥 Error en login:', error);
                 messageDiv.innerHTML = `
                     <div class="error-modern">
                         <i class="fas fa-wifi"></i>
@@ -206,11 +216,19 @@
 
         // Verificar si hay una sesión válida
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔍 Verificando sesión existente...');
             const rememberMe = localStorage.getItem('rememberMe');
             const token = localStorage.getItem('token');
             
+            console.log('💾 Datos en localStorage:', { 
+                hasToken: !!token, 
+                rememberMe: rememberMe,
+                tokenPreview: token ? token.substring(0, 20) + '...' : null
+            });
+            
             if (token) {
                 try {
+                    console.log('📤 Verificando token válido...');
                     // Verificar si el token es válido
                     const response = await fetch('/api/auth/verify', {
                         headers: {
@@ -218,26 +236,34 @@
                         }
                     });
 
+                    console.log('📥 Respuesta de verificación:', response.status, response.statusText);
+
                     if (response.ok) {
                         // Token válido, redirigir al dashboard
+                        console.log('✅ Token válido, redirigiendo al dashboard...');
                         window.location.href = 'dashboard.html';
                         return;
                     } else {
-                        // Token inválido, limpiar localStorage
+                        // Token inválido, limpiar localStorage  
+                        console.log('❌ Token inválido, limpiando localStorage...');
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
                         localStorage.removeItem('rememberMe');
                     }
                 } catch (error) {
                     // Error de conexión, limpiar localStorage
+                    console.error('💥 Error verificando token:', error);
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
                     localStorage.removeItem('rememberMe');
                 }
+            } else {
+                console.log('ℹ️ No hay token guardado');
             }
             
             if (rememberMe) {
                 document.getElementById('rememberMe').checked = true;
+                console.log('✅ Recordar sesión activado');
             }
         });
 

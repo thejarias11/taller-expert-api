@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Simple - Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin: 10px 0; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        button { padding: 10px 20px; margin: 5px; }
+        #logs { background: #f0f0f0; padding: 10px; margin: 20px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Login Debug - Taller Expert</h1>
+    
+    <form id="loginForm">
+        <div class="form-group">
+            <label>Usuario:</label>
+            <input type="text" id="username" value="admin" required>
+        </div>
+        <div class="form-group">
+            <label>Contraseña:</label>
+            <input type="password" id="password" value="Admin000" required>
+        </div>
+        <button type="submit">🚀 Login</button>
+    </form>
+
+    <button onclick="clearLogs()">🗑️ Limpiar Logs</button>
+    <button onclick="checkHealth()">🏥 Test Server Health</button>
+
+    <div id="logs">
+        <h3>📋 Logs de Debug:</h3>
+        <div id="logContent"></div>
+    </div>
+
+    <script>
+        const logDiv = document.getElementById('logContent');
+
+        function addLog(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.innerHTML = `[${time}] ${message}`;
+            logDiv.appendChild(logEntry);
+            console.log(message);
+        }
+
+        function clearLogs() {
+            logDiv.innerHTML = '';
+        }
+
+        async function checkHealth() {
+            try {
+                addLog('🏥 Verificando salud del servidor...');
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                addLog(`✅ Servidor OK: ${data.message}`, 'success');
+            } catch (error) {
+                addLog(`❌ Error servidor: ${error.message}`, 'error');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            addLog(`🚀 Intentando login con: ${username} / ${password}`);
+
+            try {
+                addLog('📤 Enviando petición POST a /api/auth/login...');
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                addLog(`📥 Respuesta recibida: ${response.status} ${response.statusText}`);
+
+                if (!response.ok) {
+                    addLog(`❌ Error HTTP: ${response.status}`, 'error');
+                }
+
+                const data = await response.json();
+                addLog(`📊 Datos JSON: ${JSON.stringify(data, null, 2)}`);
+
+                if (data.success) {
+                    addLog('✅ LOGIN EXITOSO!', 'success');
+                    addLog(`👤 Usuario: ${data.user.username} (${data.user.role})`, 'success');
+                    addLog(`🔑 Token generado: ${data.token.substring(0, 20)}...`, 'success');
+                    
+                    // Guardar en localStorage
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    addLog('💾 Datos guardados en localStorage', 'success');
+                    
+                    addLog('🔄 Redirigiendo al dashboard...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    addLog(`❌ Login fallido: ${data.message}`, 'error');
+                }
+
+            } catch (error) {
+                addLog(`💥 Error fatal: ${error.message}`, 'error');
+                addLog(`📋 Stack: ${error.stack}`, 'error');
+            }
+        });
+
+        // Verificar servidor al cargar
+        window.addEventListener('load', function() {
+            addLog('🔄 Página cargada, verificando servidor...');
+            checkHealth();
+        });
+    </script>
+</body>
+</html>

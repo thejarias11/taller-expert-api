@@ -259,18 +259,24 @@ const getSaleById = (req, res) => {
     try {
         const { id } = req.params;
         
+        console.log('🔍 Buscando venta con ID:', id, 'tipo:', typeof id);
+        console.log('📋 Ventas disponibles:', sales.map(s => ({id: s.id, numero: s.saleNumber})));
+        
         const sale = sales.find(s => s.id === id);
         
         if (!sale) {
+            console.log('❌ Venta no encontrada con ID:', id);
             return res.status(404).json({
                 success: false,
                 message: 'Venta no encontrada'
             });
         }
+        
+        console.log('✅ Venta encontrada:', sale.saleNumber);
 
         res.json({
             success: true,
-            sale
+            data: sale
         });
 
     } catch (error) {
@@ -349,10 +355,67 @@ const getSalesStats = (req, res) => {
     }
 };
 
+// Controlador para eliminar una venta
+const deleteSale = (req, res) => {
+    try {
+        const saleId = req.params.id;
+        
+        console.log('🗑️ Eliminando venta con ID:', saleId);
+        
+        const saleIndex = sales.findIndex(sale => sale.id === saleId);
+        
+        if (saleIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: '❌ Venta no encontrada'
+            });
+        }
+
+        const saleToDelete = sales[saleIndex];
+        
+        // Verificar permisos: solo admin puede eliminar ventas de otros
+        if (req.user.role !== 'admin' && req.user.role !== 'super_admin' && 
+            saleToDelete.sellerId !== req.user.userId) {
+            return res.status(403).json({
+                success: false,
+                message: '❌ No tienes permisos para eliminar esta venta'
+            });
+        }
+
+        // Opcional: Restaurar stock de productos (si se desea esta funcionalidad)
+        // for (let item of saleToDelete.items) {
+        //     const product = products.find(p => p.id === item.productId);
+        //     if (product) {
+        //         product.stock += item.quantity;
+        //     }
+        // }
+        
+        // Eliminar la venta
+        const deletedSale = sales.splice(saleIndex, 1)[0];
+        
+        console.log('✅ Venta eliminada:', deletedSale.saleNumber);
+        console.log('📊 Total de ventas ahora:', sales.length);
+
+        res.json({
+            success: true,
+            message: '✅ Venta eliminada exitosamente',
+            data: deletedSale
+        });
+
+    } catch (error) {
+        console.error('❌ Error al eliminar venta:', error);
+        res.status(500).json({
+            success: false,
+            message: '❌ Error al eliminar venta'
+        });
+    }
+};
+
 module.exports = {
     getProducts,
     createSale,
     getSales,
     getSaleById,
-    getSalesStats
+    getSalesStats,
+    deleteSale
 };

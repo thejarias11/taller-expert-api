@@ -1,7 +1,9 @@
 const express = require('express');
 const {
     getAllAppointments,
+    getAppointmentById,
     createAppointment,
+    updateAppointment,
     updateAppointmentStatus,
     deleteAppointment
 } = require('../controllers/appointmentController');
@@ -15,9 +17,11 @@ router.use(authenticateToken);
 
 // Rutas públicas para usuarios autenticados
 router.get('/', getAllAppointments);
+router.get('/:id', getAppointmentById);
 
 // Rutas para admin y empleados
 router.post('/', authorizeRoles('super_admin', 'admin', 'empleado'), createAppointment);
+router.put('/:id', authorizeRoles('super_admin', 'admin', 'empleado'), updateAppointment);
 router.put('/:id/status', authorizeRoles('super_admin', 'admin', 'empleado'), updateAppointmentStatus);
 
 // Rutas solo para administradores

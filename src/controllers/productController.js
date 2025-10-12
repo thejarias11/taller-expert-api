@@ -45,8 +45,21 @@ const getAllProducts = (req, res) => {
 
 const getProductById = (req, res) => {
     try {
-        const productId = parseInt(req.params.id);
+        const rawId = req.params.id;
+        console.log('🔍 ID de producto recibido (raw):', rawId, 'tipo:', typeof rawId);
+        
+        const productId = parseInt(rawId);
+        console.log('🔍 ID parseado:', productId, 'es NaN:', isNaN(productId));
+        
+        if (isNaN(productId)) {
+            return res.status(400).json({
+                success: false,
+                message: '❌ ID de producto inválido'
+            });
+        }
+        
         console.log('🔍 Buscando producto ID:', productId);
+        console.log('📋 Productos disponibles:', products.map(p => ({id: p.id, nombre: p.name})));
         
         const product = products.find(p => p.id === productId);
         

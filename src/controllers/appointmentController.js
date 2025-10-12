@@ -202,9 +202,143 @@ const deleteAppointment = (req, res) => {
     }
 };
 
+// Obtener cita por ID
+const getAppointmentById = (req, res) => {
+    try {
+        const rawId = req.params.id;
+        console.log('🔍 ID recibido (raw):', rawId, 'tipo:', typeof rawId);
+        
+        const appointmentId = parseInt(rawId);
+        console.log('🔍 ID parseado:', appointmentId, 'es NaN:', isNaN(appointmentId));
+        
+        if (isNaN(appointmentId)) {
+            return res.status(400).json({
+                success: false,
+                message: '❌ ID de cita inválido'
+            });
+        }
+        
+        console.log('🔍 Buscando cita con ID:', appointmentId);
+        console.log('📋 Citas disponibles:', appointments.map(a => ({id: a.id, cliente: a.clientName})));
+        
+        const appointment = appointments.find(apt => apt.id === appointmentId);
+        
+        if (!appointment) {
+            return res.status(404).json({
+                success: false,
+                message: '❌ Cita no encontrada'
+            });
+        }
+
+        // Verificar permisos: empleados solo pueden ver sus citas asignadas
+        if (req.user.role === 'empleado' && 
+            appointment.assignedTo !== req.user.username && 
+            appointment.assignedTo !== req.user.userId) {
+            return res.status(403).json({
+                success: false,
+                message: '❌ No tienes permisos para ver esta cita'
+            });
+        }
+
+        console.log('✅ Cita encontrada:', appointment.clientName);
+        
+        res.json({
+            success: true,
+            data: appointment,
+            message: '✅ Cita obtenida exitosamente'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al obtener cita:', error);
+        res.status(500).json({
+            success: false,
+            message: '❌ Error al obtener cita'
+        });
+    }
+};
+
+// Actualizar cita completa
+const updateAppointment = (req, res) => {
+    try {
+        const rawId = req.params.id;
+        const appointmentId = parseInt(rawId);
+        
+        if (isNaN(appointmentId)) {
+            return res.status(400).json({
+                success: false,
+                message: '❌ ID de cita inválido'
+            });
+        }
+        
+        const {
+            clientName,
+            clientPhone,
+            motorcycleModel,
+            serviceType,
+            scheduledDate,
+            status,
+            assignedTo
+        } = req.body;
+
+        console.log('✏️ Actualizando cita con ID:', appointmentId);
+        
+        const appointmentIndex = appointments.findIndex(apt => apt.id === appointmentId);
+        
+        if (appointmentIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: '❌ Cita no encontrada'
+            });
+        }
+
+        const currentAppointment = appointments[appointmentIndex];
+
+        // Verificar permisos: empleados solo pueden actualizar sus citas asignadas
+        if (req.user.role === 'empleado' && 
+            currentAppointment.assignedTo !== req.user.username && 
+            currentAppointment.assignedTo !== req.user.userId) {
+            return res.status(403).json({
+                success: false,
+                message: '❌ No tienes permisos para actualizar esta cita'
+            });
+        }
+
+        // Actualizar solo los campos proporcionados
+        if (clientName !== undefined) currentAppointment.clientName = clientName;
+        if (clientPhone !== undefined) currentAppointment.clientPhone = clientPhone;
+        if (motorcycleModel !== undefined) currentAppointment.motorcycleModel = motorcycleModel;
+        if (serviceType !== undefined) currentAppointment.serviceType = serviceType;
+        if (scheduledDate !== undefined) currentAppointment.scheduledDate = new Date(scheduledDate);
+        if (status !== undefined) currentAppointment.status = status;
+        if (assignedTo !== undefined && req.user.role !== 'empleado') {
+            currentAppointment.assignedTo = assignedTo;
+        }
+
+        currentAppointment.updatedAt = new Date();
+        currentAppointment.updatedBy = req.user.username;
+        
+        console.log('✅ Cita actualizada:', currentAppointment.clientName);
+        
+        res.json({
+            success: true,
+            data: currentAppointment,
+            message: '✅ Cita actualizada exitosamente'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al actualizar cita:', error);
+        res.status(500).json({
+            success: false,
+            message: '❌ Error al actualizar cita'
+        });
+    }
+};
+
 module.exports = {
     getAllAppointments,
+    getAppointmentById,
     createAppointment,
+    updateAppointment,
     updateAppointmentStatus,
     deleteAppointment
 };
