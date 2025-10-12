@@ -6,7 +6,7 @@ const {
     updateProduct, 
     deleteProduct 
 } = require('../controllers/productController');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const authenticateToken = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
 
 const router = express.Router();
@@ -19,8 +19,8 @@ router.get('/', getAllProducts);
 router.get('/:id', getProductById);
 
 // Rutas solo para administradores
-router.post('/', authorizeRoles('admin'), createProduct);
-router.put('/:id', authorizeRoles('admin'), updateProduct);
-router.delete('/:id', authorizeRoles('admin'), deleteProduct);
+router.post('/', authorizeRoles('super_admin', 'admin'), createProduct);
+router.put('/:id', authorizeRoles('super_admin', 'admin'), updateProduct);
+router.delete('/:id', authorizeRoles('super_admin', 'admin'), deleteProduct);
 
 module.exports = router;

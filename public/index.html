@@ -3,72 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taller Expert - Sistema de Gestión</title>
+    <title>Taller Expert - Sistema de Gestión de Motos</title>
     <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="main-menu">
-            <!-- 🔐 AGREGAR ESTA NUEVA TARJETA DE REGISTRO -->
-            <div class="card">
-                <h2>👤 Registro de Usuarios</h2>
-                <p>Crear nuevas cuentas en el sistema</p>
-                <button onclick="window.location.href='register.html'" class="btn-success">
-                    Ir al Registro
-                </button>
-            </div>
-
-            <div class="card">
-                <h2>🔐 Iniciar Sesión</h2>
-                <p>Accede al sistema de gestión</p>
-                <button onclick="window.location.href='login.html'" class="btn-primary">
-                    Ir al Login
-                </button>
-            </div>
     <div class="container">
-        <header>
-            <h1>🏍️ Taller Expert</h1>
-            <p>Sistema de Gestión para Taller de Motos</p>
+        <header class="hero-section">
+            <div class="hero-content">
+                <h1><i class="fas fa-motorcycle"></i> Taller Expert</h1>
+                <p class="hero-subtitle">Sistema Integral de Gestión para Talleres de Motos</p>
+                <p class="hero-description">Administra tu taller de manera eficiente con nuestro sistema completo</p>
+            </div>
         </header>
 
         <div class="main-menu">
-            <div class="card">
-                <h2>🔐 Iniciar Sesión</h2>
-                <p>Accede al sistema de gestión</p>
+            <div class="card card-primary">
+                <div class="card-icon">
+                    <i class="fas fa-sign-in-alt"></i>
+                </div>
+                <h2>Iniciar Sesión</h2>
+                <p>Accede al sistema de gestión con tu cuenta</p>
                 <button onclick="window.location.href='login.html'" class="btn-primary">
-                    Ir al Login
+                    <i class="fas fa-arrow-right"></i> Ir al Login
                 </button>
             </div>
 
-            <div class="card">
-                <h2>📊 Dashboard</h2>
-                <p>Panel de control principal</p>
+            <div class="card card-success">
+                <div class="card-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h2>Registro de Usuarios</h2>
+                <p>Crear nuevas cuentas en el sistema</p>
+                <button onclick="window.location.href='register.html'" class="btn-success">
+                    <i class="fas fa-arrow-right"></i> Ir al Registro
+                </button>
+            </div>
+
+            <div class="card card-secondary">
+                <div class="card-icon">
+                    <i class="fas fa-chart-dashboard"></i>
+                </div>
+                <h2>Panel de Control</h2>
+                <p>Dashboard administrativo completo</p>
                 <button onclick="window.location.href='dashboard.html'" class="btn-secondary">
-                    Ver Dashboard
+                    <i class="fas fa-arrow-right"></i> Ver Dashboard
                 </button>
             </div>
+        </div>
 
-            <div class="card">
-                <h2>🛠️ API Endpoints</h2>
-                <p>Prueba los servicios web</p>
-                <div class="endpoints">
-                    <div class="endpoint">
-                        <span class="method get">GET</span>
-                        <code>/api/health</code>
-                    </div>
-                    <div class="endpoint">
-                        <span class="method post">POST</span>
-                        <code>/api/auth/login</code>
-                    </div>
-                    <div class="endpoint">
-                        <span class="method get">GET</span>
-                        <code>/api/products</code>
-                    </div>
+        <div class="features-section">
+            <h2><i class="fas fa-star"></i> Características del Sistema</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <i class="fas fa-tools"></i>
+                    <h3>Gestión de Servicios</h3>
+                    <p>Control completo de servicios de mantenimiento y reparación</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h3>Agenda de Citas</h3>
+                    <p>Sistema avanzado de agendamiento y seguimiento</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-box"></i>
+                    <h3>Inventario</h3>
+                    <p>Control de stock y gestión de repuestos</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Reportes</h3>
+                    <p>Analytics y reportes de ventas en tiempo real</p>
                 </div>
             </div>
         </div>
 
         <footer>
-            <p>Desarrollado con Node.js & Express</p>
+            <div class="footer-content">
+                <p><i class="fas fa-code"></i> Desarrollado con Node.js & Express</p>
+                <p><i class="fas fa-copyright"></i> 2024 Taller Expert - Todos los derechos reservados</p>
+            </div>
         </footer>
     </div>
 </body>

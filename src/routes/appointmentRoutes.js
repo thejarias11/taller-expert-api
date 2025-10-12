@@ -5,7 +5,7 @@ const {
     updateAppointmentStatus,
     deleteAppointment
 } = require('../controllers/appointmentController');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const authenticateToken = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
 
 const router = express.Router();
@@ -17,10 +17,10 @@ router.use(authenticateToken);
 router.get('/', getAllAppointments);
 
 // Rutas para admin y empleados
-router.post('/', authorizeRoles('admin', 'empleado'), createAppointment);
-router.put('/:id/status', authorizeRoles('admin', 'empleado'), updateAppointmentStatus);
+router.post('/', authorizeRoles('super_admin', 'admin', 'empleado'), createAppointment);
+router.put('/:id/status', authorizeRoles('super_admin', 'admin', 'empleado'), updateAppointmentStatus);
 
 // Rutas solo para administradores
-router.delete('/:id', authorizeRoles('admin'), deleteAppointment);
+router.delete('/:id', authorizeRoles('super_admin', 'admin'), deleteAppointment);
 
 module.exports = router;
