@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
+const saleRoutes = require('./routes/saleRoutes');
 
 // Crear aplicación Express
 const app = express();
@@ -22,6 +23,7 @@ app.use(express.static('public'));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/sales', saleRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {

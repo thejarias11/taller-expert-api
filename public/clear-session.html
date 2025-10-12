@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpiar Sesión - Taller Expert</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 400px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        .message {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .success {
+            background: #f0fff4;
+            color: #38a169;
+            border: 1px solid #9ae6b4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpiar Sesión</h1>
+        <p>Si tienes problemas para acceder al dashboard, limpia los datos de sesión:</p>
+        
+        <button onclick="clearSession()" class="btn btn-primary">🗑️ Limpiar Datos de Sesión</button>
+        <button onclick="goToLogin()" class="btn btn-success">🚪 Ir al Login</button>
+        
+        <div id="message"></div>
+    </div>
+
+    <script>
+        function clearSession() {
+            // Limpiar todo el localStorage
+            localStorage.clear();
+            
+            // También limpiar sessionStorage por si acaso
+            sessionStorage.clear();
+            
+            // Mostrar mensaje de éxito
+            document.getElementById('message').innerHTML = `
+                <div class="message success">
+                    ✅ Datos de sesión limpiados correctamente.<br>
+                    Ahora puedes ir al login e iniciar sesión nuevamente.
+                </div>
+            `;
+        }
+        
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+        
+        // Mostrar información actual
+        window.onload = function() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token || user) {
+                document.getElementById('message').innerHTML = `
+                    <div class="message" style="background: #fff3cd; color: #856404; border: 1px solid #ffeaa7;">
+                        ⚠️ Se encontraron datos de sesión guardados.<br>
+                        Token: ${token ? 'Presente' : 'No'}<br>
+                        Usuario: ${user ? 'Presente' : 'No'}
+                    </div>
+                `;
+            } else {
+                document.getElementById('message').innerHTML = `
+                    <div class="message success">
+                        ✅ No hay datos de sesión guardados.
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

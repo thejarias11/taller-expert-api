@@ -3,14 +3,14 @@ const authorizeRoles = (...allowedRoles) => {
         if (!req.user) {
             return res.status(401).json({
                 success: false,
-                message: '❌ No autenticado'
+                message: 'No autenticado'
             });
         }
 
         if (!allowedRoles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: '❌ No tienes permisos para esta acción'
+                message: 'No tienes permisos para esta accion'
             });
         }
 

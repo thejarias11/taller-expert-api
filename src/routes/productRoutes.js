@@ -1,27 +1,26 @@
 const express = require('express');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const { 
+    getAllProducts, 
+    getProductById, 
+    createProduct, 
+    updateProduct, 
+    deleteProduct 
+} = require('../controllers/productController');
+const authenticateToken = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
 
 const router = express.Router();
 
-// Por ahora, solo creamos la estructura básica
-// Mañana agregaremos los controladores reales
+// Todas las rutas requieren autenticación
+router.use(authenticateToken);
 
-// Ruta temporal para testing
-router.get('/', authenticateToken, (req, res) => {
-    res.json({
-        success: true,
-        message: '✅ Ruta de productos funcionando',
-        user: req.user
-    });
-});
+// Rutas públicas para todos los usuarios autenticados
+router.get('/', getAllProducts);
+router.get('/:id', getProductById);
 
-router.post('/', authenticateToken, authorizeRoles('admin'), (req, res) => {
-    res.json({
-        success: true,
-        message: '✅ Crear producto funcionando',
-        data: req.body
-    });
-});
+// Rutas solo para administradores
+router.post('/', authorizeRoles('super_admin', 'admin'), createProduct);
+router.put('/:id', authorizeRoles('super_admin', 'admin'), updateProduct);
+router.delete('/:id', authorizeRoles('super_admin', 'admin'), deleteProduct);
 
 module.exports = router;

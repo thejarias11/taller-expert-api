@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Flow - Taller Expert</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007acc;
+        }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056a3; }
+        .btn-success { background: #28a745; }
+        .btn-danger { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Flow - Taller Expert</h1>
+        <p>Esta página te ayudará a probar el flujo completo de autenticación paso a paso.</p>
+        
+        <div class="step">
+            <h3>Paso 1: Limpiar y hacer Login</h3>
+            <button onclick="doLogin()" class="btn-success">🚀 Hacer Login</button>
+            <div id="loginResult"></div>
+        </div>
+
+        <div class="step">
+            <h3>Paso 2: Ir al Dashboard</h3>
+            <button onclick="goToDashboard()">📊 Ir al Dashboard</button>
+            <p><em>Nota: Hazlo INMEDIATAMENTE después del login para evitar que se borre el token</em></p>
+        </div>
+
+        <div class="step">
+            <h3>Utilidades</h3>
+            <button onclick="checkSession()">🔍 Verificar Sesión</button>
+            <button onclick="clearSession()" class="btn-danger">🗑️ Limpiar Sesión</button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function doLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '⏳ Haciendo login...';
+            
+            // Limpiar sesión primero
+            localStorage.clear();
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'Admin000'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ <strong>Login exitoso!</strong><br>
+                            Token guardado: ${data.token.substring(0, 30)}...<br>
+                            <strong>¡AHORA HAZ CLIC EN "IR AL DASHBOARD" INMEDIATAMENTE!</strong>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function goToDashboard() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('❌ No hay token. Haz login primero.');
+                return;
+            }
+            
+            console.log('🚀 Yendo al dashboard con token:', token.substring(0, 30) + '...');
+            window.location.href = 'dashboard.html';
+        }
+
+        function checkSession() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const statusDiv = document.getElementById('status');
+            
+            if (token) {
+                statusDiv.innerHTML = `
+                    <div class="success">
+                        ✅ <strong>Sesión activa</strong><br>
+                        Token: ${token.substring(0, 30)}...<br>
+                        Usuario: ${user ? JSON.parse(user).username : 'N/A'}
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="error">
+                        ❌ <strong>No hay sesión</strong>
+                    </div>
+                `;
+            }
+        }
+
+        function clearSession() {
+            localStorage.clear();
+            document.getElementById('status').innerHTML = '<div class="step">🗑️ Sesión limpiada</div>';
+            document.getElementById('loginResult').innerHTML = '';
+        }
+
+        // Verificar estado al cargar
+        window.addEventListener('load', checkSession);
+    </script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Simple - Taller Expert</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏍️ Taller Expert - Panel de Control</h1>
+            <div class="user-info">
+                <span id="userWelcome">Bienvenido</span>
+                <button onclick="logout()" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </header>
+
+        <nav class="sidebar">
+            <a href="#products" onclick="showSection('products')" class="nav-link">📦 Productos</a>
+            <a href="#appointments" onclick="showSection('appointments')" class="nav-link">📅 Citas</a>
+            <a href="#sales" onclick="showSection('sales')" class="nav-link">💰 Ventas</a>
+            <a href="#users" onclick="showSection('users')" class="nav-link">👥 Usuarios</a>
+        </nav>
+
+        <main class="content">
+            <!-- Sección de Productos -->
+            <div id="products" class="section active">
+                <h2>📦 Gestión de Productos</h2>
+                <div class="actions">
+                    <button onclick="loadProducts()" class="btn-primary">🔄 Cargar Productos</button>
+                    <button onclick="showCreateProduct()" class="btn-success">+ Nuevo Producto</button>
+                </div>
+                <div id="productsList" class="data-container">
+                    <p>Haz clic en "Cargar Productos" para ver los productos.</p>
+                </div>
+            </div>
+
+            <!-- Sección de Citas -->
+            <div id="appointments" class="section">
+                <h2>📅 Gestión de Citas</h2>
+                <div class="actions">
+                    <button onclick="loadAppointments()" class="btn-primary">🔄 Cargar Citas</button>
+                    <button onclick="showCreateAppointment()" class="btn-success">+ Nueva Cita</button>
+                </div>
+                <div id="appointmentsList" class="data-container">
+                    <p>Haz clic en "Cargar Citas" para ver las citas.</p>
+                </div>
+            </div>
+
+            <!-- Sección de Ventas -->
+            <div id="sales" class="section">
+                <h2>💰 Gestión de Ventas</h2>
+                <div class="actions">
+                    <button onclick="loadSales()" class="btn-primary">🔄 Cargar Ventas</button>
+                    <button onclick="showCreateSale()" class="btn-success">+ Nueva Venta</button>
+                </div>
+                <div id="salesList" class="data-container">
+                    <p>Haz clic en "Cargar Ventas" para ver las ventas.</p>
+                </div>
+            </div>
+
+            <!-- Sección de Usuarios -->
+            <div id="users" class="section">
+                <h2>👥 Gestión de Usuarios</h2>
+                
+                <!-- Perfil del usuario actual -->
+                <div class="user-profile-section">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <i class="fas fa-user-circle profile-avatar"></i>
+                            <div class="profile-info">
+                                <h3 id="profileName">Cargando...</h3>
+                                <p id="profileRole">Rol del usuario</p>
+                                <p id="profileEmail">Email del usuario</p>
+                            </div>
+                        </div>
+                        <div class="profile-details">
+                            <div class="detail-item">
+                                <strong>Estado:</strong>
+                                <span class="status-active">✅ Activa</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Última sesión:</strong>
+                                <span id="lastLogin">Ahora</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestión de usuarios -->
+                <div id="userManagement" style="display: none;">
+                    <h3>👥 Administrar Usuarios</h3>
+                    <div class="actions">
+                        <button onclick="loadUsers()" class="btn-primary">🔄 Cargar Usuarios</button>
+                        <button onclick="showCreateUser()" class="btn-success">+ Crear Usuario</button>
+                    </div>
+                    <div id="usersList" class="data-container">
+                        <p>Haz clic en "Cargar Usuarios" para ver los usuarios.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Mensaje global -->
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        console.log('🚀 Dashboard simple iniciando...');
+
+        // Verificar autenticación al cargar
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('📋 DOM cargado, verificando autenticación...');
+            
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            console.log('🔍 Token:', token ? 'SÍ' : 'NO');
+            console.log('👤 Usuario:', user.username || 'NO');
+            
+            if (!token) {
+                console.log('❌ No hay token, redirigiendo...');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Mostrar información del usuario
+            console.log('✅ Mostrando información del usuario...');
+            const welcomeElement = document.getElementById('userWelcome');
+            if (welcomeElement) {
+                welcomeElement.textContent = `Bienvenido, ${user.username || 'Usuario'} (${user.role || 'Usuario'})`;
+            }
+
+            // Actualizar perfil si los elementos existen
+            updateProfile(user);
+            
+            // Mostrar gestión de usuarios si es admin
+            if (user.role === 'admin' || user.role === 'super_admin') {
+                const userMgmt = document.getElementById('userManagement');
+                if (userMgmt) {
+                    userMgmt.style.display = 'block';
+                }
+            }
+            
+            console.log('✅ Dashboard inicializado correctamente');
+        });
+
+        // Función para actualizar perfil
+        function updateProfile(user) {
+            console.log('📋 Actualizando perfil...');
+            
+            const profileName = document.getElementById('profileName');
+            const profileRole = document.getElementById('profileRole');
+            const profileEmail = document.getElementById('profileEmail');
+            const lastLogin = document.getElementById('lastLogin');
+            
+            if (profileName) profileName.textContent = user.nombre || user.username || 'Usuario';
+            if (profileRole) profileRole.textContent = getRoleDisplayName(user.role);
+            if (profileEmail) profileEmail.textContent = user.email || 'No especificado';
+            if (lastLogin) lastLogin.textContent = new Date().toLocaleString('es-ES');
+        }
+
+        // Función para mostrar secciones
+        function showSection(sectionId) {
+            console.log('🔄 Cambiando a sección:', sectionId);
+            
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remover clase active de todos los enlaces
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Mostrar la sección seleccionada
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Marcar enlace como activo
+            const activeLink = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        // Función para cerrar sesión
+        function logout() {
+            console.log('🚪 Cerrando sesión...');
+            
+            if (confirm('¿Está seguro de cerrar sesión?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('rememberMe');
+                console.log('✅ Sesión cerrada');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Función para mostrar mensajes
+        function showMessage(message, type = 'info') {
+            console.log(`📢 Mensaje (${type}):`, message);
+            
+            const messageDiv = document.getElementById('message');
+            if (messageDiv) {
+                messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Función para obtener nombre del rol
+        function getRoleDisplayName(role) {
+            switch(role) {
+                case 'super_admin': return '👑 Super Administrador';
+                case 'admin': return '🔑 Administrador';
+                case 'empleado': return '👤 Empleado';
+                default: return '👤 Usuario';
+            }
+        }
+
+        // Función para hacer peticiones autenticadas
+        async function makeAuthenticatedRequest(url, options = {}) {
+            const token = localStorage.getItem('token');
+            
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+            
+            return fetch(url, { ...defaultOptions, ...options });
+        }
+
+        // ========== FUNCIONES DE PRODUCTOS ==========
+        async function loadProducts() {
+            console.log('📦 Cargando productos...');
+            showMessage('Cargando productos...', 'info');
+            
+            try {
+                const response = await makeAuthenticatedRequest('/api/products');
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Productos cargados:', data.data.length);
+                    showMessage(`${data.data.length} productos cargados`, 'success');
+                    // Aquí mostrarías los productos
+                    document.getElementById('productsList').innerHTML = `
+                        <p>✅ Se cargaron ${data.data.length} productos correctamente.</p>
+                        <p>La funcionalidad completa estará disponible pronto.</p>
+                    `;
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error cargando productos:', error);
+                showMessage('Error al cargar productos', 'error');
+            }
+        }
+
+        // ========== FUNCIONES DE CITAS ==========
+        async function loadAppointments() {
+            console.log('📅 Cargando citas...');
+            showMessage('Cargando citas...', 'info');
+            
+            try {
+                const response = await makeAuthenticatedRequest('/api/appointments');
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Citas cargadas:', data.data.length);
+                    showMessage(`${data.data.length} citas cargadas`, 'success');
+                    document.getElementById('appointmentsList').innerHTML = `
+                        <p>✅ Se cargaron ${data.data.length} citas correctamente.</p>
+                        <p>La funcionalidad completa estará disponible pronto.</p>
+                    `;
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error cargando citas:', error);
+                showMessage('Error al cargar citas', 'error');
+            }
+        }
+
+        // ========== FUNCIONES DE VENTAS ==========
+        async function loadSales() {
+            console.log('💰 Cargando ventas...');
+            showMessage('Cargando ventas...', 'info');
+            
+            try {
+                const response = await makeAuthenticatedRequest('/api/sales');
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Ventas cargadas:', data.data.length);
+                    showMessage(`${data.data.length} ventas cargadas`, 'success');
+                    document.getElementById('salesList').innerHTML = `
+                        <p>✅ Se cargaron ${data.data.length} ventas correctamente.</p>
+                        <p>La funcionalidad completa estará disponible pronto.</p>
+                    `;
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error cargando ventas:', error);
+                showMessage('Error al cargar ventas', 'error');
+            }
+        }
+
+        // ========== FUNCIONES DE USUARIOS ==========
+        async function loadUsers() {
+            console.log('👥 Cargando usuarios...');
+            showMessage('Cargando usuarios...', 'info');
+            
+            try {
+                const response = await makeAuthenticatedRequest('/api/auth/users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Usuarios cargados:', data.data.length);
+                    showMessage(`${data.data.length} usuarios cargados`, 'success');
+                    
+                    let html = '<h4>👥 Lista de Usuarios:</h4>';
+                    data.data.forEach(user => {
+                        html += `
+                            <div class="user-item" style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 4px;">
+                                <strong>${user.nombre}</strong> (@${user.username})<br>
+                                <small>Rol: ${getRoleDisplayName(user.role)} | Email: ${user.email || 'No especificado'}</small>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('usersList').innerHTML = html;
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error cargando usuarios:', error);
+                showMessage('Error al cargar usuarios', 'error');
+            }
+        }
+
+        // Funciones placeholders
+        function showCreateProduct() { showMessage('Función de crear producto en desarrollo', 'info'); }
+        function showCreateAppointment() { showMessage('Función de crear cita en desarrollo', 'info'); }
+        function showCreateSale() { showMessage('Función de crear venta en desarrollo', 'info'); }
+        function showCreateUser() { showMessage('Función de crear usuario en desarrollo', 'info'); }
+
+        console.log('✅ Dashboard simple cargado completamente');
+    </script>
+</body>
+</html>

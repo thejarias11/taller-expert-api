@@ -1,24 +1,30 @@
 const express = require('express');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const {
+    getAllAppointments,
+    getAppointmentById,
+    createAppointment,
+    updateAppointment,
+    updateAppointmentStatus,
+    deleteAppointment
+} = require('../controllers/appointmentController');
+const authenticateToken = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
 
 const router = express.Router();
 
-// Ruta temporal para testing
-router.get('/', authenticateToken, (req, res) => {
-    res.json({
-        success: true,
-        message: '✅ Ruta de citas funcionando',
-        user: req.user
-    });
-});
+// Todas las rutas requieren autenticación
+router.use(authenticateToken);
 
-router.post('/', authenticateToken, authorizeRoles('admin', 'empleado'), (req, res) => {
-    res.json({
-        success: true,
-        message: '✅ Crear cita funcionando',
-        data: req.body
-    });
-});
+// Rutas públicas para usuarios autenticados
+router.get('/', getAllAppointments);
+router.get('/:id', getAppointmentById);
+
+// Rutas para admin y empleados
+router.post('/', authorizeRoles('super_admin', 'admin', 'empleado'), createAppointment);
+router.put('/:id', authorizeRoles('super_admin', 'admin', 'empleado'), updateAppointment);
+router.put('/:id/status', authorizeRoles('super_admin', 'admin', 'empleado'), updateAppointmentStatus);
+
+// Rutas solo para administradores
+router.delete('/:id', authorizeRoles('super_admin', 'admin'), deleteAppointment);
 
 module.exports = router;
