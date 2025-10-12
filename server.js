@@ -1,7 +1,7 @@
 // Importar dependencias
 const app = require('./src/app');
 
-// Configurar puerto
+// Configurar puerto para producción
 const PORT = process.env.PORT || 3000;
 
 // Iniciar servidor
